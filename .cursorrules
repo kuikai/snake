@@ -1,0 +1,58 @@
+# Snake — Cursor project rules
+
+Follow these on every chat in this repo. Do not invent product or UI choices that contradict them.
+
+## Product
+
+- App: Snake. Package `com.yourname.snake`
+- Stack: Flutter + Material 3 + Riverpod + shared_preferences + purchases_flutter
+- No Flame, no subscriptions, no ads, no cloud
+- One $1.99 Pro purchase (`snake_pro` / entitlement `pro`) unlocks EVERYTHING
+- Locks on modes/sizes are UI only. They all open the same paywall
+- Restore Purchase always visible
+
+## Files to obey
+
+Read before UI or product changes:
+
+- `docs/Snake_PRODUCT_SPEC.md`
+- `docs/Snake_UI_PERSONALITY.md`
+- `docs/Snake_CURSOR_CONTEXT.md`
+- `docs/Snake_MODELS.md`
+- `docs/Snake_IMPLEMENTATION_PLAN.md`
+- `docs/Snake_ACCEPTANCE_CRITERIA.md`
+
+## UI
+
+- Pocket Arcade identity from `docs/Snake_UI_PERSONALITY.md`
+- No `ColorScheme.fromSeed`
+- Fraunces for title/score, Figtree for UI
+- Home uses `assets/home_bg_light.jpg` and `assets/home_bg_dark.jpg` only on Home
+- Never put that art behind the live game board
+- Play button must not cover the snake/apple illustration
+
+## Home picker
+
+Two rows above Play, not at the top of the screen:
+
+- Mode: Classic | Wrap | No Walls | Obstacles
+- Size: Small | Medium | Large · Speed toggle
+
+- One mode selected
+- Chip labels never include the word Pro
+- Locked chips: small lock only, same paywall
+- Free stays Classic + Medium
+- Overflow = horizontal scroll, no messy wrap
+
+## Screen check
+
+After any visual UI change:
+
+1. The user will have the emulator on the screen that matters
+2. Run `bash tools/check_screen.sh`
+3. Open `screenshots/latest.png`
+4. Compare it to `docs/Snake_UI_PERSONALITY.md`
+5. If it still looks like default Material, fix that screen only and screenshot again
+
+- Do not ask the user to attach a screenshot unless the script fails
+- Do not guess what the emulator looks like
