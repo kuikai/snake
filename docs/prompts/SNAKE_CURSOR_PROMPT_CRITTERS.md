@@ -1,45 +1,36 @@
 # Paste this into Cursor
 
-Add Nokia-style rare critters. Do not rewrite Home, paywall, or Settings beyond what the engine needs.
+Expand rare critters. Keep spawn rules. Do not rewrite Home or paywall.
 
-Read Snake_PRODUCT_SPEC.md and Snake_MODELS.md first.
+## Spawn (unchanged)
 
-## What to add
-
-Regular food stays the apple (+1, always on the board).
-
-Sometimes a **mouse, rat, or lizard** appears. Extra score. Short life.
-
-Rules:
-- After the player eats an apple, **15%** chance to spawn one critter
-- Not before **3** apples eaten this run
-- After a critter is eaten or expires, eat **3** more apples before the next spawn can roll
-- Only one critter at a time
-- Pick kind at random: mouse / rat / lizard
-- Spawn 2–5 Manhattan tiles from the **head**
-- Not on snake, apple, or obstacles
-- If no legal cell exists, skip the spawn
-- Lives **5 ticks**, then vanishes. No penalty
-- Eating it: score **+5**, grow +1
-- Apple still respawns as usual when eaten. Critter does not replace the apple
+- After an apple, 15% chance
+- Not before 3 apples this run
+- After a critter is eaten or expires, 3 more apples before the next roll
+- One at a time
+- Spawn 2–5 tiles from the head
+- Lives 5 ticks
+- Eat: +5 score, grow +1
 - Free + Pro, every mode
-- Pause freezes the remaining life ticks
+
+## Kinds (pick one at random)
+
+`mouse` `rat` `lizard` `frog` `beetle` `bird` `snail` `rabbit`
+
+Update `CritterKind` to that list.
 
 ## Draw
 
-Keep CustomPainter. No image files required.
+CustomPainter only. Must read in one cell:
 
-- Mouse / rat: grey-brown, ears, tail — not red
-- Lizard: olive different from snake body + tiny legs
-- Must be readable as “not the apple” in 200ms
-- Optional: tiny ticks showing life left (5 → 0)
+- mouse / rat — grey-brown, ears, tail
+- lizard — olive, not the snake color, tiny legs
+- frog — round bright green, side eye
+- beetle — dark oval, shell line
+- bird — small body + beak, not apple-red
+- snail — shell swirl
+- rabbit — two ears up, pale brown
 
-## Do not
-
-- Change tick rate or collision rules
-- Make critters Pro-only
-- Add a new mode
-- Award +5 and also skip the grow
-- Let the critter sit forever
-
-When done, list files changed. If the emulator is up, play until a critter appears and screenshot it.
+Do not use photo sprites.
+Do not change tick rate or collisions.
+When done, list files and screenshot one of the new kinds.
