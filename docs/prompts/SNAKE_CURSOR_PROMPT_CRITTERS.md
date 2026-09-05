@@ -1,6 +1,6 @@
 # Paste this into Cursor
 
-Expand rare critters. Keep spawn rules. Do not rewrite Home or paywall.
+Rare critters: exactly five kinds. Keep spawn rules. Do not rewrite Home or paywall.
 
 ## Spawn (unchanged)
 
@@ -13,24 +13,22 @@ Expand rare critters. Keep spawn rules. Do not rewrite Home or paywall.
 - Eat: +5 score, grow +1
 - Free + Pro, every mode
 
-## Kinds (pick one at random)
+## Kinds — only these five
 
-`mouse` `rat` `lizard` `frog` `beetle` `bird` `snail` `rabbit`
+`mouse` `lizard` `frog` `beetle` `bird`
 
-Update `CritterKind` to that list.
+Remove rat / snail / rabbit if they exist.
+Update `CritterKind` to that list. Pick one at random.
 
 ## Draw
 
 CustomPainter only. Must read in one cell:
 
-- mouse / rat — grey-brown, ears, tail
+- mouse — grey-brown, ears, tail
 - lizard — olive, not the snake color, tiny legs
 - frog — round bright green, side eye
 - beetle — dark oval, shell line
 - bird — small body + beak, not apple-red
-- snail — shell swirl
-- rabbit — two ears up, pale brown
 
 Do not use photo sprites.
 Do not change tick rate or collisions.
-When done, list files and screenshot one of the new kinds.
