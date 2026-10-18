@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/models.dart';
+import 'palette.dart';
 
 class BoardPalette {
   const BoardPalette({
@@ -16,8 +17,8 @@ class BoardPalette {
   final Color food;
 }
 
-class SnakePalette {
-  const SnakePalette({
+class SkinPalette {
+  const SkinPalette({
     required this.head,
     required this.body,
   });
@@ -27,30 +28,76 @@ class SnakePalette {
 }
 
 abstract final class Cosmetics {
-  static SnakePalette snakePalette(SnakeSkin skin) {
+  /// Pocket Arcade base + Pro skin / board theme.
+  /// Remaps snake, paper, and grid only — fruit always stays [base] fruit.
+  static SnakePalette playPalette({
+    required SnakePalette base,
+    required SnakeSkin skin,
+    required BoardTheme boardTheme,
+  }) {
+    var paper = base.paper;
+    var grid = base.grid;
+    var snake = base.snake;
+    var snakeHead = base.snakeHead;
+
+    if (skin != SnakeSkin.classicGreen) {
+      final skinColors = skinPalette(skin);
+      snake = skinColors.body;
+      snakeHead = skinColors.head;
+    }
+
+    if (boardTheme != BoardTheme.classic) {
+      final board = boardPalette(boardTheme);
+      paper = board.board;
+      grid = board.grid;
+    }
+
+    return SnakePalette(
+      cream: base.cream,
+      paper: paper,
+      grid: grid,
+      ink: base.ink,
+      inkSoft: base.inkSoft,
+      snake: snake,
+      snakeHead: snakeHead,
+      belly: base.belly,
+      fruit: base.fruit,
+      fruitStem: base.fruitStem,
+      play: base.play,
+      playText: base.playText,
+    );
+  }
+
+  /// Obstacle fill for non-classic board themes; null → painter fallback.
+  static Color? obstacleColor(BoardTheme boardTheme) {
+    if (boardTheme == BoardTheme.classic) return null;
+    return boardPalette(boardTheme).obstacle;
+  }
+
+  static SkinPalette skinPalette(SnakeSkin skin) {
     switch (skin) {
       case SnakeSkin.classicGreen:
-        return const SnakePalette(
+        return const SkinPalette(
           head: Color(0xFF2E7D32),
           body: Color(0xFF66BB6A),
         );
       case SnakeSkin.ember:
-        return const SnakePalette(
+        return const SkinPalette(
           head: Color(0xFFC62828),
           body: Color(0xFFEF6C00),
         );
       case SnakeSkin.ocean:
-        return const SnakePalette(
+        return const SkinPalette(
           head: Color(0xFF1565C0),
           body: Color(0xFF29B6F6),
         );
       case SnakeSkin.mono:
-        return const SnakePalette(
+        return const SkinPalette(
           head: Color(0xFF212121),
           body: Color(0xFF757575),
         );
       case SnakeSkin.neon:
-        return const SnakePalette(
+        return const SkinPalette(
           head: Color(0xFF00E676),
           body: Color(0xFF76FF03),
         );

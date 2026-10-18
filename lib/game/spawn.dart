@@ -3,14 +3,15 @@ import 'dart:math';
 import '../core/game_config.dart';
 import '../models/models.dart';
 
-/// Picks a random empty cell. Never on snake or obstacles.
+/// Picks a random empty cell. Never on snake, obstacles, or [extraBlocked].
 GridPoint spawnFood({
   required int gridSize,
   required List<GridPoint> snake,
   required List<GridPoint> obstacles,
+  Iterable<GridPoint> extraBlocked = const [],
   Random? random,
 }) {
-  final occupied = <GridPoint>{...snake, ...obstacles};
+  final occupied = <GridPoint>{...snake, ...obstacles, ...extraBlocked};
   final empty = <GridPoint>[];
   for (var y = 0; y < gridSize; y++) {
     for (var x = 0; x < gridSize; x++) {
@@ -25,6 +26,41 @@ GridPoint spawnFood({
   }
   final rng = random ?? Random();
   return empty[rng.nextInt(empty.length)];
+}
+
+/// Spawns a critter 2–5 Manhattan tiles from [head], or null if no legal cell.
+Critter? spawnCritter({
+  required int gridSize,
+  required GridPoint head,
+  required List<GridPoint> snake,
+  required GridPoint food,
+  required List<GridPoint> obstacles,
+  Random? random,
+}) {
+  final occupied = <GridPoint>{...snake, food, ...obstacles};
+  final candidates = <GridPoint>[];
+  for (var y = 0; y < gridSize; y++) {
+    for (var x = 0; x < gridSize; x++) {
+      final point = GridPoint(x, y);
+      if (occupied.contains(point)) continue;
+      final distance = (point.x - head.x).abs() + (point.y - head.y).abs();
+      if (distance < GameConfig.critterMinManhattan ||
+          distance > GameConfig.critterMaxManhattan) {
+        continue;
+      }
+      candidates.add(point);
+    }
+  }
+  if (candidates.isEmpty) return null;
+
+  final rng = random ?? Random();
+  final position = candidates[rng.nextInt(candidates.length)];
+  final kind = CritterKind.values[rng.nextInt(CritterKind.values.length)];
+  return Critter(
+    kind: kind,
+    position: position,
+    ticksLeft: GameConfig.critterLifetimeTicks,
+  );
 }
 
 /// Deterministic obstacle layout that never blocks the start corridor

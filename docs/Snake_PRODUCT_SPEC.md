@@ -41,6 +41,7 @@ This is a game I would actually play. Keep it simple, fast, and fair.
 | Themes (Pro) | Classic, Midnight, Sand, High Contrast, Forest |
 | Sounds | Short bundled / system SFX. Toggle in Settings. |
 | Haptics | Light on turn, medium on eat, heavy on death. Toggle in Settings. |
+| Smooth move | Off by default. Visual lerp between cells only. Gameplay unchanged. Free and Pro. |
 | Language | English only |
 | Product ID | `snake_pro` |
 | Entitlement | `pro` |

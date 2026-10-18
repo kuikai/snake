@@ -1,0 +1,70 @@
+rules_version = '2';
+
+// Snake online board — collection `scores`
+// Doc id: {uid}_{mode}_{size}_{speed0|speed1}
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /scores/{scoreId} {
+      allow read: if true;
+
+      allow create: if isSignedIn()
+        && ownsNewScore(scoreId)
+        && validScorePayload(request.resource.data)
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.score is int
+        && request.resource.data.score >= 0
+        && request.resource.data.score <= 100000;
+
+      allow update: if isSignedIn()
+        && ownsExistingScore()
+        && ownsNewScore(scoreId)
+        && validScorePayload(request.resource.data)
+        && request.resource.data.uid == resource.data.uid
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.mode == resource.data.mode
+        && request.resource.data.size == resource.data.size
+        && request.resource.data.increasingSpeed == resource.data.increasingSpeed
+        && request.resource.data.score is int
+        && request.resource.data.score > resource.data.score
+        && request.resource.data.score <= 100000
+        && onlyAllowedKeys();
+
+      allow delete: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function ownsExistingScore() {
+      return resource.data.uid == request.auth.uid;
+    }
+
+    function ownsNewScore(scoreId) {
+      return scoreId.matches('^' + request.auth.uid + '_.*')
+        && request.resource.data.uid == request.auth.uid;
+    }
+
+    function onlyAllowedKeys() {
+      return request.resource.data.diff(resource.data).affectedKeys()
+        .hasOnly(['nickname', 'score', 'updatedAt']);
+    }
+
+    function validScorePayload(data) {
+      return data.keys().hasOnly([
+          'uid', 'nickname', 'mode', 'size',
+          'increasingSpeed', 'score', 'updatedAt'
+        ])
+        && data.uid is string
+        && data.uid.size() > 0
+        && data.uid.size() <= 128
+        && data.nickname is string
+        && data.nickname.size() >= 3
+        && data.nickname.size() <= 12
+        && data.mode in ['classic', 'wrap', 'noWalls', 'obstacles']
+        && data.size in ['small', 'medium', 'large']
+        && data.increasingSpeed is bool
+        && data.updatedAt == request.time;
+    }
+  }
+}

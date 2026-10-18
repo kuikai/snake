@@ -1,8 +1,10 @@
+import 'dart:collection';
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:snake/core/game_config.dart';
 import 'package:snake/game/engine.dart';
+import 'package:snake/game/spawn.dart';
 import 'package:snake/models/models.dart';
 
 GameState _classicRunning({
@@ -10,6 +12,10 @@ GameState _classicRunning({
   Direction direction = Direction.right,
   GridPoint? food,
   Direction? queuedDirection,
+  Critter? critter,
+  int foodEaten = 0,
+  int score = 0,
+  int applesUntilCritterRoll = GameConfig.critterCooldownApples,
 }) {
   final gridSize = GameConfig.mediumGrid;
   final center = gridSize ~/ 2;
@@ -32,11 +38,37 @@ GameState _classicRunning({
     queuedDirection: queuedDirection,
     food: foodPoint,
     obstacles: const [],
-    score: 0,
-    foodEaten: 0,
+    score: score,
+    foodEaten: foodEaten,
     continuesLeft: 0,
     tickMs: GameConfig.baseTickMs,
+    critter: critter,
+    applesUntilCritterRoll: applesUntilCritterRoll,
   );
+}
+
+/// Deterministic RNG for engine tests (implements [Random]).
+class _SeqRandom implements Random {
+  _SeqRandom({
+    List<double> doubles = const [],
+    List<int> ints = const [],
+  })  : _doubles = Queue.of(doubles),
+        _ints = Queue.of(ints);
+
+  final Queue<double> _doubles;
+  final Queue<int> _ints;
+
+  @override
+  bool nextBool() => nextDouble() < 0.5;
+
+  @override
+  double nextDouble() => _doubles.isEmpty ? 0.99 : _doubles.removeFirst();
+
+  @override
+  int nextInt(int max) {
+    final value = _ints.isEmpty ? 0 : _ints.removeFirst();
+    return value % max;
+  }
 }
 
 void main() {
@@ -48,6 +80,8 @@ void main() {
       expect(state.gridSize, 20);
       expect(state.snake, hasLength(GameConfig.startLength));
       expect(state.direction, Direction.right);
+      expect(state.critter, isNull);
+      expect(state.applesUntilCritterRoll, GameConfig.critterCooldownApples);
 
       final center = state.gridSize ~/ 2;
       expect(state.snake.first, GridPoint(center, center));
@@ -204,6 +238,160 @@ void main() {
       expect(restored.continuesLeft, 2);
       expect(restored.snake, snapshot.snake);
       expect(restored.food, snapshot.food);
+    });
+  });
+
+  group('Critters', () {
+    test('spawnCritter stays 2–5 Manhattan from head and avoids apple', () {
+      const head = GridPoint(10, 10);
+      const food = GridPoint(12, 10);
+      final snake = [
+        head,
+        const GridPoint(9, 10),
+        const GridPoint(8, 10),
+      ];
+      final critter = spawnCritter(
+        gridSize: 20,
+        head: head,
+        snake: snake,
+        food: food,
+        obstacles: const [],
+        random: Random(3),
+      );
+
+      expect(critter, isNotNull);
+      final distance =
+          (critter!.position.x - head.x).abs() + (critter.position.y - head.y).abs();
+      expect(distance, inInclusiveRange(2, 5));
+      expect(critter.position, isNot(food));
+      expect(snake.contains(critter.position), isFalse);
+      expect(critter.ticksLeft, GameConfig.critterLifetimeTicks);
+    });
+
+    test('no spawn roll before 3 apples eaten', () {
+      var state = _classicRunning(
+        snake: const [
+          GridPoint(5, 5),
+          GridPoint(4, 5),
+          GridPoint(3, 5),
+        ],
+        food: const GridPoint(6, 5),
+        foodEaten: 0,
+        applesUntilCritterRoll: 3,
+      );
+      // Force a would-be successful roll; cooldown still blocks it.
+      state = SnakeEngine.tick(
+        state,
+        random: _SeqRandom(doubles: [0.0], ints: [0, 0, 0]),
+      );
+      expect(state.foodEaten, 1);
+      expect(state.applesUntilCritterRoll, 2);
+      expect(state.critter, isNull);
+    });
+
+    test('15% roll can spawn after cooldown reaches zero', () {
+      var state = _classicRunning(
+        snake: const [
+          GridPoint(5, 5),
+          GridPoint(4, 5),
+          GridPoint(3, 5),
+        ],
+        food: const GridPoint(6, 5),
+        foodEaten: 2,
+        applesUntilCritterRoll: 1,
+      );
+      // spawnFood nextInt, then nextDouble < 0.15, then position + kind ints.
+      state = SnakeEngine.tick(
+        state,
+        random: _SeqRandom(doubles: [0.05], ints: [0, 0, 1]),
+      );
+      expect(state.foodEaten, 3);
+      expect(state.applesUntilCritterRoll, 0);
+      expect(state.critter, isNotNull);
+      expect(state.critter!.ticksLeft, GameConfig.critterLifetimeTicks);
+    });
+
+    test('eating critter scores +5, grows +1, starts cooldown', () {
+      var state = _classicRunning(
+        snake: const [
+          GridPoint(5, 5),
+          GridPoint(4, 5),
+          GridPoint(3, 5),
+        ],
+        food: const GridPoint(0, 0),
+        score: 3,
+        foodEaten: 3,
+        applesUntilCritterRoll: 0,
+        critter: const Critter(
+          kind: CritterKind.mouse,
+          position: GridPoint(6, 5),
+          ticksLeft: 4,
+        ),
+      );
+      state = SnakeEngine.tick(state);
+      expect(state.score, 8);
+      expect(state.foodEaten, 3);
+      expect(state.snake, hasLength(4));
+      expect(state.critter, isNull);
+      expect(state.applesUntilCritterRoll, GameConfig.critterCooldownApples);
+    });
+
+    test('critter expires after 5 ticks with no penalty', () {
+      var state = _classicRunning(
+        snake: const [
+          GridPoint(5, 5),
+          GridPoint(4, 5),
+          GridPoint(3, 5),
+        ],
+        food: const GridPoint(0, 0),
+        score: 2,
+        critter: const Critter(
+          kind: CritterKind.lizard,
+          position: GridPoint(10, 10),
+          ticksLeft: 5,
+        ),
+      );
+
+      for (var i = 0; i < 5; i++) {
+        state = SnakeEngine.tick(state);
+      }
+
+      expect(state.critter, isNull);
+      expect(state.score, 2);
+      expect(state.applesUntilCritterRoll, GameConfig.critterCooldownApples);
+    });
+
+    test('pause does not age critter ticks', () {
+      var state = _classicRunning(
+        critter: const Critter(
+          kind: CritterKind.rat,
+          position: GridPoint(10, 10),
+          ticksLeft: 3,
+        ),
+      );
+      state = SnakeEngine.pause(state);
+      state = SnakeEngine.tick(state);
+      expect(state.status, RunStatus.paused);
+      expect(state.critter!.ticksLeft, 3);
+    });
+
+    test('failed roll leaves cooldown at zero for next apple', () {
+      var state = _classicRunning(
+        snake: const [
+          GridPoint(5, 5),
+          GridPoint(4, 5),
+          GridPoint(3, 5),
+        ],
+        food: const GridPoint(6, 5),
+        foodEaten: 3,
+        applesUntilCritterRoll: 0,
+      );
+      state = SnakeEngine.tick(
+        state,
+        random: _SeqRandom(doubles: [0.9], ints: [0]),
+      );
+      expect(state.critter, isNull);
+      expect(state.applesUntilCritterRoll, 0);
     });
   });
 }

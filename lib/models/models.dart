@@ -1,3 +1,4 @@
+export 'critter.dart';
 export 'enums.dart';
 export 'game_run.dart';
 export 'game_settings.dart';

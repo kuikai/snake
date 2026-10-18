@@ -38,6 +38,12 @@ File: `lib/core/game_config.dart`
 - speedStepMs = 15
 - minTickMs = 80
 - scorePerFood = 1
+- scorePerCritter = 5
+- critterCooldownApples = 3
+- critterSpawnChance = 0.15
+- critterLifetimeTicks = 5
+- critterMinManhattan = 2
+- critterMaxManhattan = 5
 - continuesPerRun = 3
 - obstaclesBySize = { small: 6, medium: 8, large: 12 }
 - maxHistory = 30
@@ -65,6 +71,7 @@ class GameSettings {
   final ThemeMode themeMode;        // light / dark / system
   final bool soundEnabled;
   final bool hapticsEnabled;
+  final bool smoothMove;          // visual lerp; default false; Free + Pro
   final GameMode lastMode;          // Free always classic
   final BoardSize lastBoardSize;    // Free always medium
   final bool lastIncreasingSpeed;   // Free always false
@@ -131,8 +138,12 @@ class GameState {
   final int foodEaten;
   final int continuesLeft;         // 3 for Pro at start, 0 for Free
   final int tickMs;
+  final Critter? critter;          // rare mouse/rat/lizard; short life
+  final int applesUntilCritterRoll; // cooldown before spawn roll
 }
 ```
+
+`Critter`: `kind` (mouse / rat / lizard), `position`, `ticksLeft` (starts at 5).
 
 Factory: `GameState.newRun(...)` places snake in the center, facing right, length 3, spawns food, optionally places obstacles.
 

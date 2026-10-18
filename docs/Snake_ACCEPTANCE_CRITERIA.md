@@ -31,6 +31,14 @@
 - [ ] Eating food: snake grows by 1 segment, score increases by 1 (or 10 – decide and keep consistent)
 - [ ] New food appears immediately after eating
 
+### Critters (rare bonus prey)
+- [ ] After an apple (once ≥3 eaten, and cooldown clear): 15% chance to spawn mouse / rat / lizard
+- [ ] Only one critter at a time; 2–5 Manhattan from head; not on snake / apple / obstacles
+- [ ] Lives 5 ticks then vanishes (no penalty); pause freezes remaining ticks
+- [ ] Eating critter: +5 score, grow +1; then 3 more apples before next spawn roll
+- [ ] Critter does not replace the apple; Free + Pro, every mode
+- [ ] Drawn in CustomPainter; clearly not the apple
+
 ### Collision & Game Over
 - [ ] Collision with own body → Game Over
 - [ ] Collision with solid wall → Game Over
@@ -114,6 +122,7 @@
 - [ ] Theme: Light / Dark / System (persisted)
 - [ ] Sound effects toggle (Pro only or always available – recommend always available, effects gated)
 - [ ] Haptic feedback toggle
+- [ ] Smooth move toggle (default off; Free and Pro; visual lerp only)
 - [ ] Restore Purchase button (always visible)
 - [ ] About / version info
 - [ ] Debug-only “Unlock Pro / Reset Pro” for testing (hidden in release)

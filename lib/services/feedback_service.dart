@@ -1,13 +1,15 @@
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/settings_provider.dart';
 
-/// Cheap system SFX + haptics. Respects Settings toggles.
+/// Cheap SFX + haptics. Respects Settings toggles.
 class FeedbackService {
   FeedbackService(this._ref);
 
   final Ref _ref;
+  final AudioPlayer _eatPlayer = AudioPlayer();
 
   bool get _soundEnabled => _ref.read(settingsProvider).soundEnabled;
   bool get _hapticsEnabled => _ref.read(settingsProvider).hapticsEnabled;
@@ -22,8 +24,12 @@ class FeedbackService {
     if (_hapticsEnabled) {
       await HapticFeedback.mediumImpact();
     }
-    if (_soundEnabled) {
-      await SystemSound.play(SystemSoundType.click);
+    if (!_soundEnabled) return;
+    try {
+      await _eatPlayer.stop();
+      await _eatPlayer.play(AssetSource('sfx/eat.wav'));
+    } catch (_) {
+      // Asset / platform audio may fail on some targets; stay silent.
     }
   }
 
@@ -41,8 +47,17 @@ class FeedbackService {
       await SystemSound.play(SystemSoundType.click);
     }
   }
+
+  Future<void> dispose() async {
+    await _eatPlayer.dispose();
+  }
 }
 
 final feedbackServiceProvider = Provider<FeedbackService>((ref) {
-  return FeedbackService(ref);
+  final service = FeedbackService(ref);
+  ref.onDispose(() {
+    // ignore: discarded_futures
+    service.dispose();
+  });
+  return service;
 });

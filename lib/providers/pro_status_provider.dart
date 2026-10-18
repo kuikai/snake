@@ -17,9 +17,15 @@ class ProStatusNotifier extends Notifier<ProStatus> {
 
   @override
   ProStatus build() {
-    final cached = ref.read(storageServiceProvider).loadCachedPro();
     ref.onDispose(_detachListener);
     Future.microtask(refreshFromStore);
+
+    // Release without RevenueCat must not trust a sticky debug cache.
+    if (!_purchases.isConfigured && !kDebugMode) {
+      return const ProStatus(isPro: false);
+    }
+
+    final cached = ref.read(storageServiceProvider).loadCachedPro();
     return ProStatus(isPro: cached);
   }
 
@@ -27,7 +33,17 @@ class ProStatusNotifier extends Notifier<ProStatus> {
 
   Future<void> _setPro(bool isPro) async {
     state = ProStatus(isPro: isPro, isLoading: false);
-    await ref.read(storageServiceProvider).saveCachedPro(isPro);
+    final storage = ref.read(storageServiceProvider);
+    await storage.saveCachedPro(isPro);
+    if (!isPro) {
+      // Pro-only online opt-in must not survive entitlement loss.
+      final online = storage.loadOnlineScoresPrefs();
+      if (online.shareOnline) {
+        await storage.saveOnlineScoresPrefs(
+          online.copyWith(shareOnline: false),
+        );
+      }
+    }
   }
 
   void _attachListener() {
@@ -46,13 +62,18 @@ class ProStatusNotifier extends Notifier<ProStatus> {
     _customerInfoListener = null;
   }
 
-  /// RevenueCat is source of truth when configured; otherwise keep cache.
+  /// RevenueCat is source of truth when configured.
+  /// Unconfigured release → Free. Unconfigured debug → local cache (debug unlock).
   Future<void> refreshFromStore() async {
     state = state.copyWith(isLoading: true);
     try {
       if (!_purchases.isConfigured) {
-        final cached = ref.read(storageServiceProvider).loadCachedPro();
-        state = ProStatus(isPro: cached);
+        if (kDebugMode) {
+          final cached = ref.read(storageServiceProvider).loadCachedPro();
+          state = ProStatus(isPro: cached);
+        } else {
+          await _setPro(false);
+        }
         return;
       }
 

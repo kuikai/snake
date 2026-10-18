@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../core/app_router.dart';
-import '../core/cosmetics.dart' hide SnakePalette;
+import '../core/cosmetics.dart';
 import '../core/palette.dart';
 import '../models/models.dart';
 import '../providers/high_scores_provider.dart';

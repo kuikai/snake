@@ -74,6 +74,7 @@ Done when: Free loop works end-to-end (Play → die → restart → high score s
 - Theme Light / Dark / System
 - Sound toggle
 - Haptic toggle
+- Smooth move toggle (default off, visual only)
 - Restore Purchase (stub OK)
 - About + version
 - Debug Unlock / Reset Pro (`kDebugMode` only)

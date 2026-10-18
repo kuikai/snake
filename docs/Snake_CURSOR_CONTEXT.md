@@ -92,6 +92,7 @@ Keep gameplay logic in `lib/game/` + providers. Widgets only render and send inp
 - Head of the snake is visually distinct.
 - Lock portrait.
 - Light / Dark / System theme from Settings.
+- Smooth move is a Settings toggle (default off). Visual lerp only; same tick rules.
 
 ---
 

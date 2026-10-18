@@ -73,6 +73,7 @@ class OnlineScoresService {
   }
 
   /// Submit only on personal-best beats, and only while opted in.
+  /// Callers must also gate on Pro — Free never posts.
   Future<void> submitPersonalBest({
     required GameMode mode,
     required BoardSize size,

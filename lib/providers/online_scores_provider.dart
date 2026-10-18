@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/models.dart';
 import '../services/online_scores_service.dart';
+import 'pro_status_provider.dart';
 import 'storage_provider.dart';
 
 final onlineScoresServiceProvider = Provider<OnlineScoresService>((ref) {
@@ -19,7 +20,14 @@ final onlineScoresPrefsProvider =
 class OnlineScoresPrefsNotifier extends Notifier<OnlineScoresPrefs> {
   @override
   OnlineScoresPrefs build() {
-    return ref.read(onlineScoresServiceProvider).loadPrefs();
+    final prefs = ref.read(onlineScoresServiceProvider).loadPrefs();
+    final isPro = ref.watch(proStatusProvider).isPro;
+    // Keep UI + storage aligned when Pro is lost while share was on.
+    if (!isPro && prefs.shareOnline) {
+      Future.microtask(turnOff);
+      return prefs.copyWith(shareOnline: false);
+    }
+    return prefs;
   }
 
   Future<void> turnOff() async {
@@ -28,6 +36,8 @@ class OnlineScoresPrefsNotifier extends Notifier<OnlineScoresPrefs> {
   }
 
   Future<void> turnOnWithNickname(String nickname) async {
+    if (!ref.read(proStatusProvider).isPro) return;
+
     final service = ref.read(onlineScoresServiceProvider);
     await service.setShareOnline(true, nickname: nickname);
     state = service.loadPrefs();
@@ -283,6 +293,7 @@ class OnlineBoardNotifier extends Notifier<OnlineBoardState> {
 
 void maybeSubmitOnlineBest(Ref ref, GameState game, bool isPersonalBest) {
   if (!isPersonalBest) return;
+  if (!ref.read(proStatusProvider).isPro) return;
   unawaited(
     ref.read(onlineScoresServiceProvider).submitPersonalBest(
           mode: game.mode,

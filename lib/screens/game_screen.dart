@@ -3,11 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../core/app_router.dart';
+import '../core/cosmetics.dart';
 import '../core/palette.dart';
 import '../models/models.dart';
 import '../providers/game_provider.dart';
 import '../providers/high_scores_provider.dart';
 import '../providers/pro_status_provider.dart';
+import '../providers/settings_provider.dart';
 import '../services/feedback_service.dart';
 import '../widgets/direction_pad.dart';
 import '../widgets/game_over_panel.dart';
@@ -23,7 +25,7 @@ class GameScreen extends ConsumerStatefulWidget {
 class _GameScreenState extends ConsumerState<GameScreen>
     with WidgetsBindingObserver {
   static const _swipeThreshold = 24.0;
-  static const _palette = SnakePalette.dark;
+  static const _basePalette = SnakePalette.dark;
 
   Offset? _panStart;
 
@@ -104,6 +106,15 @@ class _GameScreenState extends ConsumerState<GameScreen>
     final game = ref.watch(gameProvider);
     final scores = ref.watch(highScoresProvider);
     final isPro = ref.watch(proStatusProvider).isPro;
+    final settings = ref.watch(settingsProvider);
+    final playSettings =
+        ref.read(settingsProvider.notifier).effectiveForPlay(isPro: isPro);
+    final palette = Cosmetics.playPalette(
+      base: _basePalette,
+      skin: playSettings.skin,
+      boardTheme: playSettings.boardTheme,
+    );
+    final obstacleColor = Cosmetics.obstacleColor(playSettings.boardTheme);
     final isNewHighScore = ref.read(gameProvider.notifier).isNewHighScore;
     final isGameOver = game.status == RunStatus.gameOver;
     final runKey = HighScoreKey(
@@ -134,14 +145,14 @@ class _GameScreenState extends ConsumerState<GameScreen>
         }
       },
       child: Scaffold(
-        backgroundColor: _palette.cream,
+        backgroundColor: palette.cream,
         body: SafeArea(
           child: isGameOver
               ? GameOverPanel(
                   score: game.score,
                   isNewHighScore: isNewHighScore,
                   continuesLeft: game.continuesLeft,
-                  palette: _palette,
+                  palette: palette,
                   onContinue: game.continuesLeft > 0
                       ? () {
                           ref.read(gameProvider.notifier).useContinue();
@@ -164,7 +175,7 @@ class _GameScreenState extends ConsumerState<GameScreen>
                           style: GoogleFonts.fraunces(
                             fontWeight: FontWeight.w700,
                             fontSize: 40,
-                            color: _palette.ink,
+                            color: palette.ink,
                             height: 1.0,
                           ),
                         ),
@@ -175,7 +186,7 @@ class _GameScreenState extends ConsumerState<GameScreen>
                           style: GoogleFonts.figtree(
                             fontWeight: FontWeight.w500,
                             fontSize: 14,
-                            color: _palette.inkSoft,
+                            color: palette.inkSoft,
                           ),
                         ),
                         Expanded(
@@ -203,12 +214,14 @@ class _GameScreenState extends ConsumerState<GameScreen>
                                   children: [
                                     SnakeBoard(
                                       state: game,
-                                      palette: _palette,
+                                      palette: palette,
+                                      obstacleColor: obstacleColor,
+                                      smoothMove: settings.smoothMove,
                                     ),
                                     if (game.status == RunStatus.paused)
                                       _StatusBanner(
                                         label: 'paused',
-                                        palette: _palette,
+                                        palette: palette,
                                       ),
                                   ],
                                 ),
@@ -218,7 +231,7 @@ class _GameScreenState extends ConsumerState<GameScreen>
                         ),
                         const SizedBox(height: 8),
                         DirectionPad(
-                          palette: _palette,
+                          palette: palette,
                           onDirection: (direction) {
                             ref
                                 .read(gameProvider.notifier)
@@ -244,7 +257,7 @@ class _GameScreenState extends ConsumerState<GameScreen>
                             game.status == RunStatus.paused
                                 ? Icons.play_arrow
                                 : Icons.pause,
-                            color: _palette.inkSoft,
+                            color: palette.inkSoft,
                           ),
                         ),
                       ),

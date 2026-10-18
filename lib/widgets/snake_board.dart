@@ -1,6 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import '../core/game_config.dart';
 import '../core/palette.dart';
+import '../game/smooth_move.dart';
 import '../models/models.dart';
 
 /// Pocket Arcade board painter — dark Game face from UI personality §11.
@@ -8,10 +11,18 @@ class SnakeBoardPainter extends CustomPainter {
   SnakeBoardPainter({
     required this.state,
     required this.palette,
+    this.obstacleColor,
+    this.smoothMove = false,
+    this.lerpT = 1,
+    this.previousSnake,
   });
 
   final GameState state;
   final SnakePalette palette;
+  final Color? obstacleColor;
+  final bool smoothMove;
+  final double lerpT;
+  final List<GridPoint>? previousSnake;
 
   static const _boardRadius = 20.0;
   static const _gap = 2.0;
@@ -43,53 +54,102 @@ class SnakeBoardPainter extends CustomPainter {
 
     final inset = _gap / 2;
 
+    final obstaclePaint = Paint()
+      ..color = obstacleColor ?? palette.inkSoft.withValues(alpha: 0.55);
     for (final obstacle in state.obstacles) {
-      _drawSegment(
-        canvas,
-        obstacle,
-        cell,
-        inset,
-        Paint()..color = palette.inkSoft.withValues(alpha: 0.55),
-      );
+      _drawSegment(canvas, obstacle.x.toDouble(), obstacle.y.toDouble(), cell,
+          inset, obstaclePaint);
     }
 
-    for (var i = state.snake.length - 1; i >= 1; i--) {
-      _drawSegment(
-        canvas,
-        state.snake[i],
-        cell,
-        inset,
-        Paint()..color = palette.snake,
-      );
-    }
-
-    if (state.snake.isNotEmpty) {
-      final head = state.snake.first;
-      _drawSegment(
-        canvas,
-        head,
-        cell,
-        inset,
-        Paint()..color = palette.snakeHead,
-      );
-      _drawEyes(canvas, head, cell, state.direction);
-    }
+    _drawSnake(canvas, cell, inset);
 
     _drawFruit(canvas, state.food, cell);
+
+    final critter = state.critter;
+    if (critter != null) {
+      _drawCritter(canvas, critter, cell);
+    }
 
     canvas.restore();
   }
 
+  void _drawSnake(Canvas canvas, double cell, double inset) {
+    if (state.snake.isEmpty) return;
+
+    final bodyPaint = Paint()..color = palette.snake;
+    final headPaint = Paint()..color = palette.snakeHead;
+    final wrap = state.mode == GameMode.wrap;
+    final previous = previousSnake;
+    final useLerp = smoothMove && previous != null && lerpT < 1;
+
+    for (var i = state.snake.length - 1; i >= 1; i--) {
+      final pos = _segmentPos(i, previous, useLerp, wrap);
+      _drawSegmentCopies(canvas, pos.x, pos.y, cell, inset, bodyPaint);
+    }
+
+    final headPos = _segmentPos(0, previous, useLerp, wrap);
+    _drawSegmentCopies(canvas, headPos.x, headPos.y, cell, inset, headPaint);
+    for (final pos in paintCellPositions(
+      x: headPos.x,
+      y: headPos.y,
+      gridSize: state.gridSize,
+    )) {
+      _drawEyesAt(canvas, pos.x, pos.y, cell, state.direction);
+    }
+  }
+
+  ({double x, double y}) _segmentPos(
+    int index,
+    List<GridPoint>? previous,
+    bool useLerp,
+    bool wrap,
+  ) {
+    final to = state.snake[index];
+    if (!useLerp || previous == null) {
+      return (x: to.x.toDouble(), y: to.y.toDouble());
+    }
+    final from = previousCellForSegment(
+      previous: previous,
+      current: state.snake,
+      index: index,
+    );
+    return lerpCell(
+      from: from,
+      to: to,
+      t: lerpT,
+      gridSize: state.gridSize,
+      wrap: wrap,
+    );
+  }
+
+  void _drawSegmentCopies(
+    Canvas canvas,
+    double x,
+    double y,
+    double cell,
+    double inset,
+    Paint paint,
+  ) {
+    for (final pos in paintCellPositions(
+      x: x,
+      y: y,
+      gridSize: state.gridSize,
+    )) {
+      _drawSegment(canvas, pos.x, pos.y, cell, inset, paint);
+    }
+  }
+
   void _drawSegment(
     Canvas canvas,
-    GridPoint point,
+    double x,
+    double y,
     double cell,
     double inset,
     Paint paint,
   ) {
     final rect = Rect.fromLTWH(
-      point.x * cell + inset,
-      point.y * cell + inset,
+      x * cell + inset,
+      y * cell + inset,
       cell - inset * 2,
       cell - inset * 2,
     );
@@ -99,15 +159,16 @@ class SnakeBoardPainter extends CustomPainter {
     );
   }
 
-  void _drawEyes(
+  void _drawEyesAt(
     Canvas canvas,
-    GridPoint head,
+    double headX,
+    double headY,
     double cell,
     Direction direction,
   ) {
     final center = Offset(
-      (head.x + 0.5) * cell,
-      (head.y + 0.5) * cell,
+      (headX + 0.5) * cell,
+      (headY + 0.5) * cell,
     );
 
     final Offset along;
@@ -154,24 +215,251 @@ class SnakeBoardPainter extends CustomPainter {
     );
   }
 
+  void _drawCritter(Canvas canvas, Critter critter, double cell) {
+    final center = Offset(
+      (critter.position.x + 0.5) * cell,
+      (critter.position.y + 0.5) * cell,
+    );
+
+    switch (critter.kind) {
+      case CritterKind.mouse:
+        _drawRodent(
+          canvas,
+          center,
+          cell,
+          body: const Color(0xFF8B7355),
+          scale: 0.78,
+        );
+      case CritterKind.rat:
+        _drawRodent(
+          canvas,
+          center,
+          cell,
+          body: const Color(0xFF6B5A48),
+          scale: 0.92,
+        );
+      case CritterKind.lizard:
+        _drawLizard(canvas, center, cell);
+    }
+
+    _drawCritterLifeTicks(canvas, center, cell, critter.ticksLeft);
+  }
+
+  void _drawRodent(
+    Canvas canvas,
+    Offset center,
+    double cell, {
+    required Color body,
+    required double scale,
+  }) {
+    final paint = Paint()..color = body;
+    final ear = Paint()..color = body.withValues(alpha: 0.85);
+    final bodyR = cell * 0.28 * scale;
+
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: center.translate(0, cell * 0.04),
+        width: bodyR * 2.1,
+        height: bodyR * 1.55,
+      ),
+      paint,
+    );
+
+    final head = center.translate(cell * 0.16 * scale, -cell * 0.06);
+    canvas.drawCircle(head, bodyR * 0.72, paint);
+
+    final earR = bodyR * 0.38;
+    canvas.drawCircle(
+      head.translate(-earR * 0.9, -earR * 1.35),
+      earR,
+      ear,
+    );
+    canvas.drawCircle(
+      head.translate(earR * 0.55, -earR * 1.45),
+      earR,
+      ear,
+    );
+
+    final tail = Paint()
+      ..color = body
+      ..strokeWidth = cell * 0.06
+      ..strokeCap = StrokeCap.round
+      ..style = PaintingStyle.stroke;
+    final tailStart = center.translate(-bodyR * 0.95, cell * 0.06);
+    canvas.drawPath(
+      Path()
+        ..moveTo(tailStart.dx, tailStart.dy)
+        ..quadraticBezierTo(
+          tailStart.dx - cell * 0.22 * scale,
+          tailStart.dy + cell * 0.12,
+          tailStart.dx - cell * 0.32 * scale,
+          tailStart.dy - cell * 0.02,
+        ),
+      tail,
+    );
+  }
+
+  void _drawLizard(Canvas canvas, Offset center, double cell) {
+    // Olive distinct from classic green snake body.
+    const bodyColor = Color(0xFF7A8F3E);
+    final paint = Paint()..color = bodyColor;
+    final leg = Paint()
+      ..color = bodyColor
+      ..strokeWidth = cell * 0.07
+      ..strokeCap = StrokeCap.round;
+
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: center,
+        width: cell * 0.58,
+        height: cell * 0.28,
+      ),
+      paint,
+    );
+    canvas.drawCircle(center.translate(cell * 0.22, 0), cell * 0.14, paint);
+
+    // Tiny legs — reads as lizard, not snake.
+    canvas.drawLine(
+      center.translate(-cell * 0.08, cell * 0.06),
+      center.translate(-cell * 0.18, cell * 0.2),
+      leg,
+    );
+    canvas.drawLine(
+      center.translate(cell * 0.06, cell * 0.06),
+      center.translate(cell * 0.16, cell * 0.2),
+      leg,
+    );
+    canvas.drawLine(
+      center.translate(-cell * 0.08, -cell * 0.06),
+      center.translate(-cell * 0.16, -cell * 0.18),
+      leg,
+    );
+    canvas.drawLine(
+      center.translate(cell * 0.06, -cell * 0.06),
+      center.translate(cell * 0.14, -cell * 0.18),
+      leg,
+    );
+
+    final tail = Paint()
+      ..color = bodyColor
+      ..strokeWidth = cell * 0.07
+      ..strokeCap = StrokeCap.round
+      ..style = PaintingStyle.stroke;
+    canvas.drawLine(
+      center.translate(-cell * 0.26, 0),
+      center.translate(-cell * 0.4, cell * 0.06),
+      tail,
+    );
+  }
+
+  void _drawCritterLifeTicks(
+    Canvas canvas,
+    Offset center,
+    double cell,
+    int ticksLeft,
+  ) {
+    final paint = Paint()..color = palette.inkSoft.withValues(alpha: 0.7);
+    final startX = center.dx - cell * 0.2;
+    final y = center.dy + cell * 0.38;
+    for (var i = 0; i < GameConfig.critterLifetimeTicks; i++) {
+      final filled = i < ticksLeft;
+      canvas.drawCircle(
+        Offset(startX + i * cell * 0.1, y),
+        cell * 0.035,
+        Paint()
+          ..color = filled
+              ? paint.color
+              : palette.inkSoft.withValues(alpha: 0.25),
+      );
+    }
+  }
+
   @override
   bool shouldRepaint(covariant SnakeBoardPainter oldDelegate) {
-    return oldDelegate.state != state || oldDelegate.palette != palette;
+    return oldDelegate.state != state ||
+        oldDelegate.palette != palette ||
+        oldDelegate.obstacleColor != obstacleColor ||
+        oldDelegate.smoothMove != smoothMove ||
+        oldDelegate.lerpT != lerpT ||
+        !listEquals(oldDelegate.previousSnake, previousSnake);
   }
 }
 
-class SnakeBoard extends StatelessWidget {
+class SnakeBoard extends StatefulWidget {
   const SnakeBoard({
     super.key,
     required this.state,
     this.palette = SnakePalette.dark,
+    this.obstacleColor,
+    this.smoothMove = false,
   });
 
   final GameState state;
   final SnakePalette palette;
+  final Color? obstacleColor;
+  final bool smoothMove;
+
+  @override
+  State<SnakeBoard> createState() => _SnakeBoardState();
+}
+
+class _SnakeBoardState extends State<SnakeBoard>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  List<GridPoint>? _fromSnake;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: widget.state.tickMs),
+    );
+    _controller.addListener(() {
+      if (widget.smoothMove) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(covariant SnakeBoard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _controller.duration = Duration(milliseconds: widget.state.tickMs);
+
+    if (!widget.smoothMove) {
+      _fromSnake = null;
+      _controller.stop();
+      _controller.value = 1;
+      return;
+    }
+
+    final snakeChanged =
+        !listEquals(oldWidget.state.snake, widget.state.snake);
+    if (snakeChanged) {
+      _fromSnake = List<GridPoint>.from(oldWidget.state.snake);
+      _controller.forward(from: 0);
+      if (widget.state.status != RunStatus.running) {
+        _controller.stop();
+      }
+    } else if (oldWidget.state.status == RunStatus.running &&
+        widget.state.status == RunStatus.paused) {
+      _controller.stop();
+    } else if (oldWidget.state.status == RunStatus.paused &&
+        widget.state.status == RunStatus.running) {
+      if (_controller.value < 1) {
+        _controller.forward();
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final lerpT = widget.smoothMove ? _controller.value : 1.0;
     return AspectRatio(
       aspectRatio: 1,
       child: DecoratedBox(
@@ -189,8 +477,12 @@ class SnakeBoard extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           child: CustomPaint(
             painter: SnakeBoardPainter(
-              state: state,
-              palette: palette,
+              state: widget.state,
+              palette: widget.palette,
+              obstacleColor: widget.obstacleColor,
+              smoothMove: widget.smoothMove,
+              lerpT: lerpT,
+              previousSnake: widget.smoothMove ? _fromSnake : null,
             ),
           ),
         ),

@@ -1,4 +1,5 @@
 import '../core/game_config.dart';
+import 'critter.dart';
 import 'enums.dart';
 import 'grid_point.dart';
 
@@ -18,6 +19,8 @@ class GameState {
     required this.foodEaten,
     required this.continuesLeft,
     required this.tickMs,
+    this.critter,
+    this.applesUntilCritterRoll = GameConfig.critterCooldownApples,
   });
 
   final RunStatus status;
@@ -34,6 +37,12 @@ class GameState {
   final int foodEaten;
   final int continuesLeft;
   final int tickMs;
+
+  /// Rare bonus prey, or null when none is on the board.
+  final Critter? critter;
+
+  /// Apples left to eat before a critter spawn roll is allowed.
+  final int applesUntilCritterRoll;
 
   /// Places snake in the center, facing right, length 3.
   /// Spawns food on an empty cell. Optionally places obstacles.
@@ -75,6 +84,8 @@ class GameState {
       foodEaten: 0,
       continuesLeft: isPro ? GameConfig.continuesPerRun : 0,
       tickMs: GameConfig.baseTickMs,
+      critter: null,
+      applesUntilCritterRoll: GameConfig.critterCooldownApples,
     );
   }
 
@@ -94,6 +105,9 @@ class GameState {
     int? foodEaten,
     int? continuesLeft,
     int? tickMs,
+    Critter? critter,
+    bool clearCritter = false,
+    int? applesUntilCritterRoll,
   }) {
     return GameState(
       status: status ?? this.status,
@@ -111,6 +125,9 @@ class GameState {
       foodEaten: foodEaten ?? this.foodEaten,
       continuesLeft: continuesLeft ?? this.continuesLeft,
       tickMs: tickMs ?? this.tickMs,
+      critter: clearCritter ? null : (critter ?? this.critter),
+      applesUntilCritterRoll:
+          applesUntilCritterRoll ?? this.applesUntilCritterRoll,
     );
   }
 
@@ -129,6 +146,8 @@ class GameState {
         'foodEaten': foodEaten,
         'continuesLeft': continuesLeft,
         'tickMs': tickMs,
+        'critter': critter?.toJson(),
+        'applesUntilCritterRoll': applesUntilCritterRoll,
       };
 
   factory GameState.fromJson(Map<String, dynamic> json) {
@@ -153,6 +172,11 @@ class GameState {
       foodEaten: json['foodEaten'] as int,
       continuesLeft: json['continuesLeft'] as int,
       tickMs: json['tickMs'] as int,
+      critter: json['critter'] == null
+          ? null
+          : Critter.fromJson(Map<String, dynamic>.from(json['critter'] as Map)),
+      applesUntilCritterRoll: json['applesUntilCritterRoll'] as int? ??
+          GameConfig.critterCooldownApples,
     );
   }
 

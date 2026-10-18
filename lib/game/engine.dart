@@ -11,7 +11,8 @@ import 'spawn.dart';
 /// 1. Consume queued direction if legal (not a 180° reverse).
 /// 2. Move head one cell.
 /// 3. Check collisions.
-/// 4. Eat (grow + score) or pop tail.
+/// 4. Eat apple / critter (grow + score) or pop tail.
+/// 5. Age or clear the active critter (pause freezes this via no tick).
 abstract final class SnakeEngine {
   static GameState newRun({
     GameMode mode = GameMode.classic,
@@ -57,6 +58,8 @@ abstract final class SnakeEngine {
       foodEaten: 0,
       continuesLeft: isPro ? GameConfig.continuesPerRun : 0,
       tickMs: GameConfig.baseTickMs,
+      critter: null,
+      applesUntilCritterRoll: GameConfig.critterCooldownApples,
     );
   }
 
@@ -134,31 +137,80 @@ abstract final class SnakeEngine {
       );
     }
 
-    final ate = next == state.food;
+    final ateFood = next == state.food;
+    final ateCritter =
+        state.critter != null && next == state.critter!.position;
+
     final newSnake = <GridPoint>[next, ...state.snake];
-    if (!ate) {
+    if (!ateFood && !ateCritter) {
       newSnake.removeLast();
-      return state.copyWith(
-        snake: newSnake,
-        direction: direction,
-        clearQueuedDirection: true,
-      );
     }
 
-    final foodEaten = state.foodEaten + 1;
-    final score = state.score + GameConfig.scorePerFood;
+    var score = state.score;
+    var foodEaten = state.foodEaten;
     var tickMs = state.tickMs;
-    if (state.increasingSpeed &&
-        foodEaten % GameConfig.speedStepEveryFood == 0) {
-      tickMs = max(GameConfig.minTickMs, tickMs - GameConfig.speedStepMs);
+    var food = state.food;
+    var critter = state.critter;
+    var applesUntilCritterRoll = state.applesUntilCritterRoll;
+    var justSpawnedCritter = false;
+
+    if (ateCritter) {
+      score += GameConfig.scorePerCritter;
+      critter = null;
+      applesUntilCritterRoll = GameConfig.critterCooldownApples;
     }
 
-    final food = spawnFood(
-      gridSize: state.gridSize,
-      snake: newSnake,
-      obstacles: state.obstacles,
-      random: random,
-    );
+    if (ateFood) {
+      foodEaten += 1;
+      score += GameConfig.scorePerFood;
+      if (state.increasingSpeed &&
+          foodEaten % GameConfig.speedStepEveryFood == 0) {
+        tickMs = max(GameConfig.minTickMs, tickMs - GameConfig.speedStepMs);
+      }
+
+      food = spawnFood(
+        gridSize: state.gridSize,
+        snake: newSnake,
+        obstacles: state.obstacles,
+        extraBlocked: [
+          if (critter != null) critter.position,
+        ],
+        random: random,
+      );
+
+      if (critter == null) {
+        if (applesUntilCritterRoll > 0) {
+          applesUntilCritterRoll -= 1;
+        }
+        if (applesUntilCritterRoll == 0) {
+          final rng = random ?? Random();
+          if (rng.nextDouble() < GameConfig.critterSpawnChance) {
+            final spawned = spawnCritter(
+              gridSize: state.gridSize,
+              head: next,
+              snake: newSnake,
+              food: food,
+              obstacles: state.obstacles,
+              random: rng,
+            );
+            if (spawned != null) {
+              critter = spawned;
+              justSpawnedCritter = true;
+            }
+          }
+        }
+      }
+    }
+
+    if (critter != null && !justSpawnedCritter) {
+      final left = critter.ticksLeft - 1;
+      if (left <= 0) {
+        critter = null;
+        applesUntilCritterRoll = GameConfig.critterCooldownApples;
+      } else {
+        critter = critter.copyWith(ticksLeft: left);
+      }
+    }
 
     return state.copyWith(
       snake: newSnake,
@@ -168,6 +220,9 @@ abstract final class SnakeEngine {
       score: score,
       foodEaten: foodEaten,
       tickMs: tickMs,
+      critter: critter,
+      clearCritter: critter == null,
+      applesUntilCritterRoll: applesUntilCritterRoll,
     );
   }
 

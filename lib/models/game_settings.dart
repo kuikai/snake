@@ -7,6 +7,7 @@ class GameSettings {
     this.themeMode = ThemeMode.system,
     this.soundEnabled = true,
     this.hapticsEnabled = true,
+    this.smoothMove = false,
     this.lastMode = GameMode.classic,
     this.lastBoardSize = BoardSize.medium,
     this.lastIncreasingSpeed = false,
@@ -17,6 +18,7 @@ class GameSettings {
   final ThemeMode themeMode;
   final bool soundEnabled;
   final bool hapticsEnabled;
+  final bool smoothMove;
   final GameMode lastMode;
   final BoardSize lastBoardSize;
   final bool lastIncreasingSpeed;
@@ -27,6 +29,7 @@ class GameSettings {
     ThemeMode? themeMode,
     bool? soundEnabled,
     bool? hapticsEnabled,
+    bool? smoothMove,
     GameMode? lastMode,
     BoardSize? lastBoardSize,
     bool? lastIncreasingSpeed,
@@ -37,6 +40,7 @@ class GameSettings {
       themeMode: themeMode ?? this.themeMode,
       soundEnabled: soundEnabled ?? this.soundEnabled,
       hapticsEnabled: hapticsEnabled ?? this.hapticsEnabled,
+      smoothMove: smoothMove ?? this.smoothMove,
       lastMode: lastMode ?? this.lastMode,
       lastBoardSize: lastBoardSize ?? this.lastBoardSize,
       lastIncreasingSpeed: lastIncreasingSpeed ?? this.lastIncreasingSpeed,
@@ -49,6 +53,7 @@ class GameSettings {
         'themeMode': themeMode.name,
         'soundEnabled': soundEnabled,
         'hapticsEnabled': hapticsEnabled,
+        'smoothMove': smoothMove,
         'lastMode': lastMode.name,
         'lastBoardSize': lastBoardSize.name,
         'lastIncreasingSpeed': lastIncreasingSpeed,
@@ -61,6 +66,7 @@ class GameSettings {
       themeMode: _themeModeFrom(json['themeMode'] as String?),
       soundEnabled: json['soundEnabled'] as bool? ?? true,
       hapticsEnabled: json['hapticsEnabled'] as bool? ?? true,
+      smoothMove: json['smoothMove'] as bool? ?? false,
       lastMode: GameMode.values.byName(
         json['lastMode'] as String? ?? GameMode.classic.name,
       ),

@@ -43,3 +43,6 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+# Local Cursor / run state
+.cursor/
+.flutter_run.pid

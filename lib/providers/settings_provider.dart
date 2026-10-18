@@ -30,6 +30,10 @@ class SettingsNotifier extends Notifier<GameSettings> {
     await _save(state.copyWith(hapticsEnabled: enabled));
   }
 
+  Future<void> setSmoothMove(bool enabled) async {
+    await _save(state.copyWith(smoothMove: enabled));
+  }
+
   Future<void> setLastMode(GameMode mode) async {
     await _save(state.copyWith(lastMode: mode));
   }

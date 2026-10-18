@@ -15,7 +15,15 @@ abstract final class GameConfig {
   static const int minTickMs = 80;
 
   static const int scorePerFood = 1;
+  static const int scorePerCritter = 5;
   static const int continuesPerRun = 3;
+
+  /// Apples that must be eaten before the first (or next) critter spawn can roll.
+  static const int critterCooldownApples = 3;
+  static const double critterSpawnChance = 0.15;
+  static const int critterLifetimeTicks = 5;
+  static const int critterMinManhattan = 2;
+  static const int critterMaxManhattan = 5;
 
   static const Map<BoardSize, int> obstaclesBySize = {
     BoardSize.small: 6,

@@ -98,12 +98,12 @@ class SettingsScreen extends ConsumerWidget {
           const _SectionHeader('Feedback'),
           SwitchListTile(
             title: const Text('Sound'),
-            subtitle: const Text('Short system effects during play'),
+            subtitle: const Text('Short chirp when you eat the apple'),
             value: settings.soundEnabled,
             onChanged: (value) async {
               await ref.read(settingsProvider.notifier).setSoundEnabled(value);
               if (value) {
-                await ref.read(feedbackServiceProvider).button();
+                await ref.read(feedbackServiceProvider).eat();
               }
             },
           ),
@@ -118,6 +118,14 @@ class SettingsScreen extends ConsumerWidget {
               if (value) {
                 await HapticFeedback.lightImpact();
               }
+            },
+          ),
+          SwitchListTile(
+            title: const Text('smooth move'),
+            subtitle: const Text('Slide between cells instead of snapping'),
+            value: settings.smoothMove,
+            onChanged: (value) {
+              ref.read(settingsProvider.notifier).setSmoothMove(value);
             },
           ),
           const Divider(),
