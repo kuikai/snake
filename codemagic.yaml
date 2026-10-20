@@ -1,12 +1,12 @@
 # Codemagic — iOS first (TestFlight)
 # Docs: https://docs.codemagic.io/yaml-quick-start/building-a-flutter-app/
 #
-# Before first build:
-# 1. Apple Developer Program + App Store Connect app (bundle id below)
-# 2. Codemagic → Teams → Integrations → Developer Portal API key (App Manager)
-# 3. Replace ASC_KEY_NAME with that integration's exact name
-# 4. Replace APP_STORE_APPLE_ID with the numeric App Store Connect app id
-# 5. Optional: Team variables RC_IOS_API_KEY for RevenueCat
+# Setup:
+# 1. Integrations → Developer Portal → key named exactly "Codemagic"
+# 2. Environment variables → group "snake_ios" with:
+#      APP_STORE_APPLE_ID = numeric App Store Connect Apple ID (not secure)
+#      RC_IOS_API_KEY     = RevenueCat iOS public SDK key appl_... (secure)  [optional]
+# 3. App ID + App Store Connect app must exist for com.yourname.snake
 
 workflows:
   ios-testflight:
@@ -14,15 +14,13 @@ workflows:
     max_build_duration: 120
     instance_type: mac_mini_m2
     integrations:
-      # Must match Codemagic → Integrations → Developer Portal key name exactly
       app_store_connect: Codemagic
     environment:
+      groups:
+        - snake_ios
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.yourname.snake
-      vars:
-        # App Store Connect → your app → App Information → Apple ID (number)
-        APP_STORE_APPLE_ID: "0000000000"
       flutter: stable
       xcode: latest
       cocoapods: default
