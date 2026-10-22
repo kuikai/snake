@@ -1,12 +1,10 @@
 # Codemagic — iOS first (TestFlight)
-# Docs: https://docs.codemagic.io/yaml-quick-start/building-a-flutter-app/
 #
-# Setup:
-# 1. Integrations → Developer Portal → key named exactly "Codemagic"
-# 2. Environment variables → group "snake_ios" with:
-#      APP_STORE_APPLE_ID = numeric App Store Connect Apple ID (not secure)
-#      RC_IOS_API_KEY     = RevenueCat iOS public SDK key appl_... (secure)  [optional]
-# 3. App ID + App Store Connect app must exist for com.yourname.snake
+# Env group "snake_ios":
+#   APP_STORE_APPLE_ID = App Store Connect → App Information → Apple ID (number)
+#   RC_IOS_API_KEY     = optional RevenueCat appl_... key (secure)
+#
+# Integrations → Developer Portal key name must be exactly: Codemagic
 
 workflows:
   ios-testflight:
@@ -24,6 +22,9 @@ workflows:
       flutter: stable
       xcode: latest
       cocoapods: default
+      vars:
+        # Marketing version (what users see). Build number is set in the script.
+        APP_VERSION: "1.0.0"
     scripts:
       - name: Set up code signing
         script: xcode-project use-profiles
@@ -40,15 +41,42 @@ workflows:
         ignore_failure: true
       - name: Build IPA
         script: |
-          # App Store Connect already has CFBundleVersion 13+. Always clear that bar.
-          # PROJECT_BUILD_NUMBER alone can still be <= 13 early on, so add a floor.
-          BUILD_NUMBER=$(( ${PROJECT_BUILD_NUMBER:-0} + 100 ))
-          echo "Using CFBundleVersion / build-number: $BUILD_NUMBER"
+          set -e
+          cd "$CM_BUILD_DIR"
+
+          # Ask App Store Connect for the highest build already used (any version).
+          LATEST=""
+          if [ -n "$APP_STORE_APPLE_ID" ] && [ "$APP_STORE_APPLE_ID" != "0000000000" ]; then
+            LATEST=$(app-store-connect get-latest-build-number --all-versions "$APP_STORE_APPLE_ID" 2>/dev/null | tr -cd '0-9' || true)
+          fi
+          if [ -z "$LATEST" ]; then
+            LATEST=13
+          fi
+
+          # Always clear the known floor (13) and stay ahead of Codemagic counters.
+          BUILD_NUMBER=$((LATEST + 1))
+          FLOOR=$(( ${PROJECT_BUILD_NUMBER:-0} + 200 ))
+          if [ "$FLOOR" -gt "$BUILD_NUMBER" ]; then
+            BUILD_NUMBER=$FLOOR
+          fi
+
+          export FLUTTER_BUILD_NAME="$APP_VERSION"
+          export FLUTTER_BUILD_NUMBER="$BUILD_NUMBER"
+          echo "APP_STORE_APPLE_ID=$APP_STORE_APPLE_ID"
+          echo "Building IPA with version $FLUTTER_BUILD_NAME ($FLUTTER_BUILD_NUMBER)"
+
           flutter build ipa --release \
-            --build-name=1.0.0 \
-            --build-number="$BUILD_NUMBER" \
+            --build-name="$FLUTTER_BUILD_NAME" \
+            --build-number="$FLUTTER_BUILD_NUMBER" \
             --export-options-plist=/Users/builder/export_options.plist \
             --dart-define=RC_IOS_API_KEY=${RC_IOS_API_KEY:-}
+
+          # Prove what ended up in the binary before publish.
+          APP_PLIST="build/ios/iphoneos/Runner.app/Info.plist"
+          if [ -f "$APP_PLIST" ]; then
+            echo "Runner.app CFBundleShortVersionString=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$APP_PLIST")"
+            echo "Runner.app CFBundleVersion=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$APP_PLIST")"
+          fi
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
