@@ -12,6 +12,7 @@ class StorageService {
   static const _settingsKey = 'game_settings';
   static const _highScoresKey = 'high_scores';
   static const _proCachedKey = 'pro_cached';
+  static const _proTestOverrideKey = 'pro_test_override';
   static const _shareOnlineKey = 'share_scores_online';
   static const _onlineNicknameKey = 'online_nickname';
 
@@ -57,6 +58,20 @@ class StorageService {
 
   Future<void> saveCachedPro(bool isPro) async {
     await _prefs.setBool(_proCachedKey, isPro);
+  }
+
+  /// Tester override. Null follows the store. True forces Pro. False forces Free.
+  bool? loadProTestOverride() {
+    if (!_prefs.containsKey(_proTestOverrideKey)) return null;
+    return _prefs.getBool(_proTestOverrideKey);
+  }
+
+  Future<void> saveProTestOverride(bool? enabled) async {
+    if (enabled == null) {
+      await _prefs.remove(_proTestOverrideKey);
+      return;
+    }
+    await _prefs.setBool(_proTestOverrideKey, enabled);
   }
 
   OnlineScoresPrefs loadOnlineScoresPrefs() {

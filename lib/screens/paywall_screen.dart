@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../core/revenue_cat_config.dart';
 import '../providers/pro_status_provider.dart';
 import '../providers/purchase_provider.dart';
 import '../services/purchase_service.dart';
@@ -32,6 +33,15 @@ class PaywallScreen extends ConsumerWidget {
       case PurchaseOutcome.error:
         return result.message ?? 'Something went wrong.';
     }
+  }
+
+  Future<void> _unlockForTesting(BuildContext context, WidgetRef ref) async {
+    await ref.read(proStatusProvider.notifier).debugUnlockPro();
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Pro unlocked for testing.')),
+    );
+    Navigator.of(context).pop(true);
   }
 
   Future<void> _purchase(BuildContext context, WidgetRef ref) async {
@@ -131,6 +141,15 @@ class PaywallScreen extends ConsumerWidget {
                       )
                     : const Text(r'Purchase — $1.99'),
               ),
+              if (RevenueCatConfig.allowsLocalProUnlock && !pro.isPro) ...[
+                const SizedBox(height: 8),
+                TextButton(
+                  onPressed: pro.isLoading
+                      ? null
+                      : () => _unlockForTesting(context, ref),
+                  child: const Text('Unlock for testing'),
+                ),
+              ],
               const SizedBox(height: 8),
               TextButton(
                 onPressed: pro.isLoading ? null : () => _restore(context, ref),

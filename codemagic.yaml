@@ -63,10 +63,12 @@ workflows:
           echo "APP_STORE_APPLE_ID is set: $([ -n "$APP_STORE_APPLE_ID" ] && echo yes || echo no)"
           echo "Building IPA with version $APP_VERSION ($BUILD_NUMBER)"
 
+          # PRO_TEST_UNLOCK is TestFlight only. Drop it for an App Store build.
           flutter build ipa --release \
             --build-name="$APP_VERSION" \
             --build-number="$BUILD_NUMBER" \
             --export-options-plist=/Users/builder/export_options.plist \
+            --dart-define=PRO_TEST_UNLOCK=true \
             --dart-define=RC_IOS_API_KEY=${RC_IOS_API_KEY:-}
 
           # Prove what ended up in the binary before publish.

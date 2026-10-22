@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import '../core/app_router.dart';
+import '../core/revenue_cat_config.dart';
 import '../core/cosmetics.dart';
 import '../models/models.dart';
 import '../providers/pro_status_provider.dart';
@@ -224,18 +225,22 @@ class SettingsScreen extends ConsumerWidget {
             leading: const Icon(Icons.info_outline),
             onTap: () => _showAbout(context),
           ),
-          if (kDebugMode) ...[
+          if (RevenueCatConfig.allowsLocalProUnlock) ...[
             const Divider(),
-            const _SectionHeader('Debug'),
+            const _SectionHeader(kDebugMode ? 'Debug' : 'Testing'),
             ListTile(
               title: const Text('Unlock Pro'),
-              subtitle: const Text('Debug only — not in release'),
+              subtitle: Text(
+                kDebugMode
+                    ? 'Debug only — not in the App Store build'
+                    : 'TestFlight only — not in the App Store build',
+              ),
               leading: const Icon(Icons.lock_open),
               onTap: () async {
                 await ref.read(proStatusProvider.notifier).debugUnlockPro();
                 if (!context.mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Pro unlocked (debug)')),
+                  const SnackBar(content: Text('Pro unlocked for testing.')),
                 );
               },
             ),
@@ -247,7 +252,7 @@ class SettingsScreen extends ConsumerWidget {
                 await ref.read(proStatusProvider.notifier).debugResetPro();
                 if (!context.mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Pro reset (debug)')),
+                  const SnackBar(content: Text('Pro reset for testing.')),
                 );
               },
             ),

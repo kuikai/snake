@@ -75,12 +75,11 @@ class PurchaseService {
 
   Future<PurchaseOutcomeResult> purchasePro() async {
     if (!_configured) {
-      if (kDebugMode) {
+      if (RevenueCatConfig.allowsLocalProUnlock) {
         return const PurchaseOutcomeResult(
           outcome: PurchaseOutcome.notConfigured,
           isPro: true,
-          message:
-              'RevenueCat keys missing — unlocked Pro in debug stub mode.',
+          message: 'Test build — Pro unlocked without a store purchase.',
         );
       }
       return const PurchaseOutcomeResult(
