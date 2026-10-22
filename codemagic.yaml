@@ -40,23 +40,13 @@ workflows:
         ignore_failure: true
       - name: Build IPA
         script: |
-          # Must be higher than any CFBundleVersion already on App Store Connect.
-          LATEST=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_APPLE_ID" 2>/dev/null || true)
-          if [ -z "$LATEST" ] || [ "$LATEST" = "null" ]; then
-            LATEST=$(app-store-connect get-latest-app-store-build-number "$APP_STORE_APPLE_ID" 2>/dev/null || true)
-          fi
-          if [ -z "$LATEST" ] || [ "$LATEST" = "null" ]; then
-            LATEST=13
-          fi
-          BUILD_NUMBER=$((LATEST + 1))
-          # Codemagic also increments PROJECT_BUILD_NUMBER; take the higher of the two.
-          if [ -n "$PROJECT_BUILD_NUMBER" ] && [ "$PROJECT_BUILD_NUMBER" -gt "$BUILD_NUMBER" ]; then
-            BUILD_NUMBER=$PROJECT_BUILD_NUMBER
-          fi
-          echo "Using build number $BUILD_NUMBER (latest known: $LATEST)"
+          # App Store Connect already has CFBundleVersion 13+. Always clear that bar.
+          # PROJECT_BUILD_NUMBER alone can still be <= 13 early on, so add a floor.
+          BUILD_NUMBER=$(( ${PROJECT_BUILD_NUMBER:-0} + 100 ))
+          echo "Using CFBundleVersion / build-number: $BUILD_NUMBER"
           flutter build ipa --release \
             --build-name=1.0.0 \
-            --build-number=$BUILD_NUMBER \
+            --build-number="$BUILD_NUMBER" \
             --export-options-plist=/Users/builder/export_options.plist \
             --dart-define=RC_IOS_API_KEY=${RC_IOS_API_KEY:-}
     artifacts:
