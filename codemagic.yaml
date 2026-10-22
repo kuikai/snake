@@ -60,14 +60,12 @@ workflows:
             BUILD_NUMBER=$FLOOR
           fi
 
-          export FLUTTER_BUILD_NAME="$APP_VERSION"
-          export FLUTTER_BUILD_NUMBER="$BUILD_NUMBER"
-          echo "APP_STORE_APPLE_ID=$APP_STORE_APPLE_ID"
-          echo "Building IPA with version $FLUTTER_BUILD_NAME ($FLUTTER_BUILD_NUMBER)"
+          echo "APP_STORE_APPLE_ID is set: $([ -n "$APP_STORE_APPLE_ID" ] && echo yes || echo no)"
+          echo "Building IPA with version $APP_VERSION ($BUILD_NUMBER)"
 
           flutter build ipa --release \
-            --build-name="$FLUTTER_BUILD_NAME" \
-            --build-number="$FLUTTER_BUILD_NUMBER" \
+            --build-name="$APP_VERSION" \
+            --build-number="$BUILD_NUMBER" \
             --export-options-plist=/Users/builder/export_options.plist \
             --dart-define=RC_IOS_API_KEY=${RC_IOS_API_KEY:-}
 
