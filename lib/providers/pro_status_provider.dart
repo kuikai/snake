@@ -47,15 +47,6 @@ class ProStatusNotifier extends Notifier<ProStatus> {
     state = ProStatus(isPro: isPro, isLoading: false);
     final storage = ref.read(storageServiceProvider);
     await storage.saveCachedPro(isPro);
-    if (!isPro) {
-      // Pro-only online opt-in must not survive entitlement loss.
-      final online = storage.loadOnlineScoresPrefs();
-      if (online.shareOnline) {
-        await storage.saveOnlineScoresPrefs(
-          online.copyWith(shareOnline: false),
-        );
-      }
-    }
   }
 
   void _attachListener() {

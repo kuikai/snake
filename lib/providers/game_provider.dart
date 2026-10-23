@@ -7,7 +7,6 @@ import '../game/engine.dart';
 import '../models/models.dart';
 import '../services/feedback_service.dart';
 import 'high_scores_provider.dart';
-import 'online_scores_provider.dart';
 import 'pro_status_provider.dart';
 import 'settings_provider.dart';
 
@@ -153,7 +152,6 @@ class GameController extends Notifier<GameState> {
     final result =
         await ref.read(highScoresProvider.notifier).recordRun(game);
     isNewHighScore = result.isPersonalBest;
-    maybeSubmitOnlineBest(ref, game, result.isPersonalBest);
   }
 
   void _syncLoop() {

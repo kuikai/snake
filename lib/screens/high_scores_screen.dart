@@ -7,50 +7,15 @@ import '../core/cosmetics.dart';
 import '../core/palette.dart';
 import '../models/models.dart';
 import '../providers/high_scores_provider.dart';
-import '../providers/online_scores_provider.dart';
 import '../providers/pro_status_provider.dart';
-import '../widgets/share_scores_sheet.dart';
 
 class HighScoresScreen extends ConsumerWidget {
   const HighScoresScreen({super.key});
-
-  Future<void> _onShareToggle(
-    BuildContext context,
-    WidgetRef ref, {
-    required bool wantOn,
-    required bool isPro,
-  }) async {
-    if (!isPro) {
-      await Navigator.of(context).pushNamed(AppRoutes.paywall);
-      return;
-    }
-
-    if (!wantOn) {
-      await ref.read(onlineScoresPrefsProvider.notifier).turnOff();
-      return;
-    }
-
-    final nickname = await showShareScoresSheet(context);
-    if (!context.mounted) return;
-    if (nickname == null) return;
-    await ref
-        .read(onlineScoresPrefsProvider.notifier)
-        .turnOnWithNickname(nickname);
-  }
-
-  Future<void> _openBoard(BuildContext context, bool isPro) async {
-    if (!isPro) {
-      await Navigator.of(context).pushNamed(AppRoutes.paywall);
-      return;
-    }
-    await Navigator.of(context).pushNamed(AppRoutes.onlineBoard);
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final scores = ref.watch(highScoresProvider);
     final isPro = ref.watch(proStatusProvider).isPro;
-    final onlinePrefs = ref.watch(onlineScoresPrefsProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final palette = isDark ? SnakePalette.dark : SnakePalette.light;
 
@@ -103,59 +68,7 @@ class HighScoresScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 28),
-            Text(
-              'live board',
-              style: GoogleFonts.fraunces(
-                fontWeight: FontWeight.w600,
-                fontSize: 22,
-                color: palette.ink,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'public. top 1000.',
-              style: GoogleFonts.figtree(
-                fontWeight: FontWeight.w500,
-                fontSize: 14,
-                color: palette.inkSoft,
-              ),
-            ),
-            const SizedBox(height: 8),
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Text(
-                'share scores online',
-                style: GoogleFonts.figtree(
-                  fontWeight: FontWeight.w600,
-                  color: palette.ink,
-                ),
-              ),
-              value: isPro && onlinePrefs.shareOnline,
-              activeThumbColor: palette.cream,
-              activeTrackColor: palette.ink,
-              onChanged: (value) => _onShareToggle(
-                context,
-                ref,
-                wantOn: value,
-                isPro: isPro,
-              ),
-            ),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: TextButton(
-                onPressed: () => _openBoard(context, isPro),
-                style: TextButton.styleFrom(
-                  foregroundColor: palette.ink,
-                  padding: EdgeInsets.zero,
-                ),
-                child: Text(
-                  'open live board',
-                  style: GoogleFonts.figtree(fontWeight: FontWeight.w600),
-                ),
-              ),
-            ),
             if (!isPro) ...[
-              const SizedBox(height: 20),
               Text(
                 'Pro keeps personal bests per mode and size, plus your last 30 runs.',
                 style: GoogleFonts.figtree(color: palette.inkSoft),
@@ -184,7 +97,6 @@ class HighScoresScreen extends ConsumerWidget {
               ),
             ],
             if (isPro) ...[
-              const SizedBox(height: 28),
               Text(
                 'Personal bests',
                 style: GoogleFonts.fraunces(

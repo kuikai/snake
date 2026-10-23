@@ -107,8 +107,9 @@ class _GameScreenState extends ConsumerState<GameScreen>
     final scores = ref.watch(highScoresProvider);
     final isPro = ref.watch(proStatusProvider).isPro;
     final settings = ref.watch(settingsProvider);
-    final playSettings =
-        ref.read(settingsProvider.notifier).effectiveForPlay(isPro: isPro);
+    final playSettings = ref
+        .read(settingsProvider.notifier)
+        .effectiveForPlay(isPro: isPro);
     final palette = Cosmetics.playPalette(
       base: _basePalette,
       skin: playSettings.skin,
@@ -122,7 +123,8 @@ class _GameScreenState extends ConsumerState<GameScreen>
       size: game.boardSize,
       increasingSpeed: game.increasingSpeed,
     );
-    final bestForRun = scores.bestByKey[runKey.storageKey] ??
+    final bestForRun =
+        scores.bestByKey[runKey.storageKey] ??
         (runKey.mode == GameMode.classic &&
                 runKey.size == BoardSize.medium &&
                 !runKey.increasingSpeed
@@ -191,8 +193,7 @@ class _GameScreenState extends ConsumerState<GameScreen>
                         ),
                         Expanded(
                           child: Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 16),
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
                             child: Center(
                               child: GestureDetector(
                                 behavior: HitTestBehavior.opaque,
@@ -204,8 +205,7 @@ class _GameScreenState extends ConsumerState<GameScreen>
                                 onTap: () {
                                   if (game.status == RunStatus.paused) {
                                     ref.read(gameProvider.notifier).resume();
-                                  } else if (game.status ==
-                                      RunStatus.running) {
+                                  } else if (game.status == RunStatus.running) {
                                     ref.read(gameProvider.notifier).pause();
                                   }
                                 },
@@ -230,13 +230,16 @@ class _GameScreenState extends ConsumerState<GameScreen>
                           ),
                         ),
                         const SizedBox(height: 8),
-                        DirectionPad(
-                          palette: palette,
-                          onDirection: (direction) {
-                            ref
-                                .read(gameProvider.notifier)
-                                .queueDirection(direction);
-                          },
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: DirectionPad(
+                            palette: palette,
+                            onDirection: (direction) {
+                              ref
+                                  .read(gameProvider.notifier)
+                                  .queueDirection(direction);
+                            },
+                          ),
                         ),
                         const SizedBox(height: 16),
                       ],
@@ -270,10 +273,7 @@ class _GameScreenState extends ConsumerState<GameScreen>
 }
 
 class _StatusBanner extends StatelessWidget {
-  const _StatusBanner({
-    required this.label,
-    required this.palette,
-  });
+  const _StatusBanner({required this.label, required this.palette});
 
   final String label;
   final SnakePalette palette;

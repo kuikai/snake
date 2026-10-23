@@ -13,8 +13,6 @@ class StorageService {
   static const _highScoresKey = 'high_scores';
   static const _proCachedKey = 'pro_cached';
   static const _proTestOverrideKey = 'pro_test_override';
-  static const _shareOnlineKey = 'share_scores_online';
-  static const _onlineNicknameKey = 'online_nickname';
 
   GameSettings loadSettings() {
     final raw = _prefs.getString(_settingsKey);
@@ -72,22 +70,5 @@ class StorageService {
       return;
     }
     await _prefs.setBool(_proTestOverrideKey, enabled);
-  }
-
-  OnlineScoresPrefs loadOnlineScoresPrefs() {
-    return OnlineScoresPrefs(
-      shareOnline: _prefs.getBool(_shareOnlineKey) ?? false,
-      nickname: _prefs.getString(_onlineNicknameKey),
-    );
-  }
-
-  Future<void> saveOnlineScoresPrefs(OnlineScoresPrefs prefs) async {
-    await _prefs.setBool(_shareOnlineKey, prefs.shareOnline);
-    final nickname = prefs.nickname?.trim();
-    if (nickname == null || nickname.isEmpty) {
-      await _prefs.remove(_onlineNicknameKey);
-    } else {
-      await _prefs.setString(_onlineNicknameKey, nickname);
-    }
   }
 }
