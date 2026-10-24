@@ -220,9 +220,14 @@ class _GameScreenState extends ConsumerState<GameScreen>
                                       smoothMove: settings.smoothMove,
                                     ),
                                     if (game.status == RunStatus.paused)
-                                      _StatusBanner(
-                                        label: 'paused',
+                                      _PauseOverlay(
                                         palette: palette,
+                                        onResume: () {
+                                          ref
+                                              .read(gameProvider.notifier)
+                                              .resume();
+                                        },
+                                        onMenu: _goToMenu,
                                       ),
                                   ],
                                 ),
@@ -319,26 +324,67 @@ class _CritterCountdown extends StatelessWidget {
   }
 }
 
-class _StatusBanner extends StatelessWidget {
-  const _StatusBanner({required this.label, required this.palette});
+class _PauseOverlay extends StatelessWidget {
+  const _PauseOverlay({
+    required this.palette,
+    required this.onResume,
+    required this.onMenu,
+  });
 
-  final String label;
   final SnakePalette palette;
+  final VoidCallback onResume;
+  final VoidCallback onMenu;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-      decoration: BoxDecoration(
-        color: palette.cream.withValues(alpha: 0.88),
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Text(
-        label,
-        style: GoogleFonts.figtree(
-          fontWeight: FontWeight.w600,
-          fontSize: 18,
-          color: palette.ink,
+    return Material(
+      color: palette.cream.withValues(alpha: 0.88),
+      borderRadius: BorderRadius.circular(14),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(28, 20, 28, 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'paused',
+              style: GoogleFonts.figtree(
+                fontWeight: FontWeight.w600,
+                fontSize: 18,
+                color: palette.ink,
+              ),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: 200,
+              height: 48,
+              child: FilledButton(
+                onPressed: onResume,
+                style: FilledButton.styleFrom(
+                  backgroundColor: palette.play,
+                  foregroundColor: palette.playText,
+                  shape: const StadiumBorder(),
+                ),
+                child: Text(
+                  'Resume',
+                  style: GoogleFonts.figtree(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: onMenu,
+              child: Text(
+                'Menu',
+                style: GoogleFonts.figtree(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                  color: palette.inkSoft,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
