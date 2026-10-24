@@ -1,4 +1,5 @@
 import '../core/game_config.dart';
+import '../game/combo.dart';
 import 'critter.dart';
 import 'enums.dart';
 import 'grid_point.dart';
@@ -18,6 +19,9 @@ class GameState {
     required this.score,
     required this.foodEaten,
     required this.tickMs,
+    this.combo = GameConfig.comboMin,
+    this.ticksSinceFood = 0,
+    this.foodDistance = 1,
     this.critter,
     this.applesUntilCritterRoll = GameConfig.critterCooldownApples,
   });
@@ -35,6 +39,15 @@ class GameState {
   final int score;
   final int foodEaten;
   final int tickMs;
+
+  /// Multiplier for the next apple. Starts at 1 and moves after each eat.
+  final int combo;
+
+  /// Running ticks since the current apple appeared. The eat tick counts.
+  final int ticksSinceFood;
+
+  /// Shortest cell distance from the head to the apple when it appeared.
+  final int foodDistance;
 
   /// Rare bonus prey, or null when none is on the board.
   final Critter? critter;
@@ -57,7 +70,11 @@ class GameState {
     ];
 
     final obstacles = mode == GameMode.obstacles
-        ? _placeObstacles(boardSize: boardSize, gridSize: gridSize, snake: snake)
+        ? _placeObstacles(
+            boardSize: boardSize,
+            gridSize: gridSize,
+            snake: snake,
+          )
         : const <GridPoint>[];
 
     final food = _spawnFood(
@@ -80,6 +97,14 @@ class GameState {
       score: 0,
       foodEaten: 0,
       tickMs: GameConfig.baseTickMs,
+      combo: GameConfig.comboMin,
+      ticksSinceFood: 0,
+      foodDistance: foodCellDistance(
+        from: snake.first,
+        to: food,
+        gridSize: gridSize,
+        mode: mode,
+      ),
       critter: null,
       applesUntilCritterRoll: GameConfig.critterCooldownApples,
     );
@@ -100,6 +125,9 @@ class GameState {
     int? score,
     int? foodEaten,
     int? tickMs,
+    int? combo,
+    int? ticksSinceFood,
+    int? foodDistance,
     Critter? critter,
     bool clearCritter = false,
     int? applesUntilCritterRoll,
@@ -112,13 +140,17 @@ class GameState {
       gridSize: gridSize ?? this.gridSize,
       snake: snake ?? this.snake,
       direction: direction ?? this.direction,
-      queuedDirection:
-          clearQueuedDirection ? null : (queuedDirection ?? this.queuedDirection),
+      queuedDirection: clearQueuedDirection
+          ? null
+          : (queuedDirection ?? this.queuedDirection),
       food: food ?? this.food,
       obstacles: obstacles ?? this.obstacles,
       score: score ?? this.score,
       foodEaten: foodEaten ?? this.foodEaten,
       tickMs: tickMs ?? this.tickMs,
+      combo: combo ?? this.combo,
+      ticksSinceFood: ticksSinceFood ?? this.ticksSinceFood,
+      foodDistance: foodDistance ?? this.foodDistance,
       critter: clearCritter ? null : (critter ?? this.critter),
       applesUntilCritterRoll:
           applesUntilCritterRoll ?? this.applesUntilCritterRoll,
@@ -126,22 +158,25 @@ class GameState {
   }
 
   Map<String, dynamic> toJson() => {
-        'status': status.name,
-        'mode': mode.name,
-        'boardSize': boardSize.name,
-        'increasingSpeed': increasingSpeed,
-        'gridSize': gridSize,
-        'snake': snake.map((p) => p.toJson()).toList(),
-        'direction': direction.name,
-        'queuedDirection': queuedDirection?.name,
-        'food': food.toJson(),
-        'obstacles': obstacles.map((p) => p.toJson()).toList(),
-        'score': score,
-        'foodEaten': foodEaten,
-        'tickMs': tickMs,
-        'critter': critter?.toJson(),
-        'applesUntilCritterRoll': applesUntilCritterRoll,
-      };
+    'status': status.name,
+    'mode': mode.name,
+    'boardSize': boardSize.name,
+    'increasingSpeed': increasingSpeed,
+    'gridSize': gridSize,
+    'snake': snake.map((p) => p.toJson()).toList(),
+    'direction': direction.name,
+    'queuedDirection': queuedDirection?.name,
+    'food': food.toJson(),
+    'obstacles': obstacles.map((p) => p.toJson()).toList(),
+    'score': score,
+    'foodEaten': foodEaten,
+    'tickMs': tickMs,
+    'combo': combo,
+    'ticksSinceFood': ticksSinceFood,
+    'foodDistance': foodDistance,
+    'critter': critter?.toJson(),
+    'applesUntilCritterRoll': applesUntilCritterRoll,
+  };
 
   factory GameState.fromJson(Map<String, dynamic> json) {
     return GameState(
@@ -164,10 +199,14 @@ class GameState {
       score: json['score'] as int,
       foodEaten: json['foodEaten'] as int,
       tickMs: json['tickMs'] as int,
+      combo: json['combo'] as int? ?? GameConfig.comboMin,
+      ticksSinceFood: json['ticksSinceFood'] as int? ?? 0,
+      foodDistance: json['foodDistance'] as int? ?? 1,
       critter: json['critter'] == null
           ? null
           : Critter.fromJson(Map<String, dynamic>.from(json['critter'] as Map)),
-      applesUntilCritterRoll: json['applesUntilCritterRoll'] as int? ??
+      applesUntilCritterRoll:
+          json['applesUntilCritterRoll'] as int? ??
           GameConfig.critterCooldownApples,
     );
   }

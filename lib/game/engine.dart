@@ -3,6 +3,7 @@ import 'dart:math';
 import '../core/game_config.dart';
 import '../models/models.dart';
 import 'collision.dart';
+import 'combo.dart';
 import 'spawn.dart';
 
 /// Pure headless Snake engine. No Flutter / UI imports.
@@ -28,11 +29,7 @@ abstract final class SnakeEngine {
     ];
 
     final obstacles = mode == GameMode.obstacles
-        ? placeObstacles(
-            boardSize: boardSize,
-            gridSize: gridSize,
-            snake: snake,
-          )
+        ? placeObstacles(boardSize: boardSize, gridSize: gridSize, snake: snake)
         : const <GridPoint>[];
 
     final food = spawnFood(
@@ -56,6 +53,12 @@ abstract final class SnakeEngine {
       score: 0,
       foodEaten: 0,
       tickMs: GameConfig.baseTickMs,
+      foodDistance: foodCellDistance(
+        from: snake.first,
+        to: food,
+        gridSize: gridSize,
+        mode: mode,
+      ),
       critter: null,
       applesUntilCritterRoll: GameConfig.critterCooldownApples,
     );
@@ -120,10 +123,12 @@ abstract final class SnakeEngine {
     }
 
     // No Walls: clamped into the same cell → no movement this tick.
+    // The wasted step still counts toward the apple clock.
     if (state.mode == GameMode.noWalls && next == state.snake.first) {
       return state.copyWith(
         direction: direction,
         clearQueuedDirection: true,
+        ticksSinceFood: state.ticksSinceFood + 1,
       );
     }
 
@@ -136,8 +141,7 @@ abstract final class SnakeEngine {
     }
 
     final ateFood = next == state.food;
-    final ateCritter =
-        state.critter != null && next == state.critter!.position;
+    final ateCritter = state.critter != null && next == state.critter!.position;
 
     final newSnake = <GridPoint>[next, ...state.snake];
     if (!ateFood && !ateCritter) {
@@ -151,6 +155,9 @@ abstract final class SnakeEngine {
     var critter = state.critter;
     var applesUntilCritterRoll = state.applesUntilCritterRoll;
     var justSpawnedCritter = false;
+    var combo = state.combo;
+    var ticksSinceFood = state.ticksSinceFood + 1;
+    var foodDistance = state.foodDistance;
 
     if (ateCritter) {
       score += GameConfig.scorePerCritter;
@@ -160,7 +167,14 @@ abstract final class SnakeEngine {
 
     if (ateFood) {
       foodEaten += 1;
-      score += GameConfig.scorePerFood;
+      // Pay the combo earned so far, then retune it for the next apple.
+      score += GameConfig.scorePerFood * combo;
+      combo = comboAfterEat(
+        combo: combo,
+        steps: ticksSinceFood,
+        distance: foodDistance,
+      );
+      ticksSinceFood = 0;
       if (state.increasingSpeed &&
           foodEaten % GameConfig.speedStepEveryFood == 0) {
         tickMs = max(GameConfig.minTickMs, tickMs - GameConfig.speedStepMs);
@@ -170,10 +184,14 @@ abstract final class SnakeEngine {
         gridSize: state.gridSize,
         snake: newSnake,
         obstacles: state.obstacles,
-        extraBlocked: [
-          if (critter != null) critter.position,
-        ],
+        extraBlocked: [if (critter != null) critter.position],
         random: random,
+      );
+      foodDistance = foodCellDistance(
+        from: next,
+        to: food,
+        gridSize: state.gridSize,
+        mode: state.mode,
       );
 
       if (critter == null) {
@@ -218,6 +236,9 @@ abstract final class SnakeEngine {
       score: score,
       foodEaten: foodEaten,
       tickMs: tickMs,
+      combo: combo,
+      ticksSinceFood: ticksSinceFood,
+      foodDistance: foodDistance,
       critter: critter,
       clearCritter: critter == null,
       applesUntilCritterRoll: applesUntilCritterRoll,

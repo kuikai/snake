@@ -114,6 +114,7 @@ No all-caps paragraphs. The wordmark may be “Snake” not “SNAKE”.
 - No AppBar. No back chevron in a toolbar. No centered “Classic” title bar.
 - Score is top-center, Fraunces 700, the biggest thing above the board
 - Best sits under the score as `best 14`, Figtree, inkSoft
+- Combo sits under best as `x3`, Figtree, smaller than the score. `x1` is inkSoft. `x2` and up use the fruit color
 - Pause is a small top-right icon only
 - Back / leave lives behind pause, not as a toolbar action
 - Board centered, max width, side margins 16

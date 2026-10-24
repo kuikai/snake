@@ -39,6 +39,11 @@ File: `lib/core/game_config.dart`
 - minTickMs = 80
 - scorePerFood = 1
 - scorePerCritter = 5
+- comboMin = 1
+- comboMax = 5
+- comboFastSlack = 2
+- comboSteadyFactor = 2
+- comboSteadySlack = 4
 - critterCooldownApples = 3
 - critterSpawnChance = 0.15
 - critterLifetimeTicks = 6
@@ -136,6 +141,9 @@ class GameState {
   final int score;
   final int foodEaten;
   final int tickMs;
+  final int combo;                 // x1–x5, pays the next apple
+  final int ticksSinceFood;        // running steps since this apple appeared
+  final int foodDistance;          // shortest cells to the apple at spawn
   final Critter? critter;          // rare mouse/rat/lizard; short life
   final int applesUntilCritterRoll; // cooldown before spawn roll
 }

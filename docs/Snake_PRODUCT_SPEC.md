@@ -26,7 +26,7 @@ This is a game I would actually play. Keep it simple, fast, and fair.
 | Classic / Free board | **20×20** cells |
 | Pro board sizes | Small **12×12**, Medium **20×20**, Large **28×28** |
 | Starting snake | Length **3**, center of board, moving **right** |
-| Score | **+1** per food |
+| Score | **+1** per food, times a speed combo (`x1`–`x5`). A fast apple raises it, a steady apple holds it, a slow apple lowers it. The new combo pays the next apple. Critters stay **+5**. |
 | Tick rate (Classic) | **180 ms** per step |
 | Increasing Speed mode | Start 180 ms, −15 ms every **5** food, floor **80 ms** |
 | Death | Ends the run. No continues. Again starts a new run. |

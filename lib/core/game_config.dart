@@ -1,4 +1,4 @@
-import '../models/models.dart';
+import '../models/enums.dart';
 
 /// Locked gameplay constants. Do not scatter magic numbers elsewhere.
 abstract final class GameConfig {
@@ -16,6 +16,17 @@ abstract final class GameConfig {
 
   static const int scorePerFood = 1;
   static const int scorePerCritter = 5;
+
+  /// Speed combo applied to the next apple. Climbs on a fast eat, drops on a slow one.
+  static const int comboMin = 1;
+  static const int comboMax = 5;
+
+  /// Eat within `distance + slack` steps to raise the combo.
+  static const int comboFastSlack = 2;
+
+  /// Eat within `distance * factor + slack` steps to hold the combo. Slower drops it.
+  static const int comboSteadyFactor = 2;
+  static const int comboSteadySlack = 4;
 
   /// Apples that must be eaten before the first (or next) critter spawn can roll.
   static const int critterCooldownApples = 3;

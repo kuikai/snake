@@ -180,6 +180,18 @@ class _GameScreenState extends ConsumerState<GameScreen>
                             color: palette.inkSoft,
                           ),
                         ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'x${game.combo}',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.figtree(
+                            fontWeight: FontWeight.w500,
+                            fontSize: 14,
+                            color: game.combo > GameConfig.comboMin
+                                ? palette.fruit
+                                : palette.inkSoft,
+                          ),
+                        ),
                         Expanded(
                           child: Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -273,10 +285,7 @@ class _GameScreenState extends ConsumerState<GameScreen>
 }
 
 class _CritterCountdown extends StatelessWidget {
-  const _CritterCountdown({
-    required this.ticksLeft,
-    required this.palette,
-  });
+  const _CritterCountdown({required this.ticksLeft, required this.palette});
 
   final int ticksLeft;
   final SnakePalette palette;

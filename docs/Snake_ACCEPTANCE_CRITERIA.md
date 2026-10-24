@@ -28,7 +28,7 @@
 ### Food
 - [ ] One food item on the board at a time
 - [ ] Food spawns randomly on an empty cell (never on snake body)
-- [ ] Eating food: snake grows by 1 segment, score increases by 1 (or 10 – decide and keep consistent)
+- [ ] Eating food: snake grows by 1. Score adds 1 × current combo (starts at x1, cap x5). A fast reach raises the combo, a steady reach holds it, a slow reach drops it (floor x1). The updated combo pays the next apple. Critters stay +5 and do not move the combo.
 - [ ] New food appears immediately after eating
 
 ### Critters (rare bonus prey)
