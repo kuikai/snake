@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../core/cosmetics.dart';
+import '../core/game_config.dart';
 import '../core/palette.dart';
 import '../models/models.dart';
 import '../providers/game_provider.dart';
@@ -232,6 +233,17 @@ class _GameScreenState extends ConsumerState<GameScreen>
                         const SizedBox(height: 16),
                       ],
                     ),
+                    if (game.critter != null &&
+                        (game.status == RunStatus.running ||
+                            game.status == RunStatus.paused))
+                      Positioned(
+                        top: 4,
+                        left: 12,
+                        child: _CritterCountdown(
+                          ticksLeft: game.critter!.ticksLeft,
+                          palette: palette,
+                        ),
+                      ),
                     if (game.status == RunStatus.running ||
                         game.status == RunStatus.paused)
                       Positioned(
@@ -255,6 +267,44 @@ class _GameScreenState extends ConsumerState<GameScreen>
                   ],
                 ),
         ),
+      ),
+    );
+  }
+}
+
+class _CritterCountdown extends StatelessWidget {
+  const _CritterCountdown({
+    required this.ticksLeft,
+    required this.palette,
+  });
+
+  final int ticksLeft;
+  final SnakePalette palette;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 48,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (var i = 0; i < GameConfig.critterLifetimeTicks; i++)
+            Padding(
+              padding: EdgeInsets.only(
+                right: i == GameConfig.critterLifetimeTicks - 1 ? 0 : 6,
+              ),
+              child: Container(
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: i < ticksLeft
+                      ? palette.ink
+                      : palette.inkSoft.withValues(alpha: 0.35),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

@@ -34,7 +34,7 @@
 ### Critters (rare bonus prey)
 - [ ] After an apple (once ≥3 eaten, and cooldown clear): 15% chance to spawn mouse / rat / lizard
 - [ ] Only one critter at a time; 2–5 Manhattan from head; not on snake / apple / obstacles
-- [ ] Lives 5 ticks then vanishes (no penalty); pause freezes remaining ticks
+- [ ] Lives 6 ticks then vanishes (no penalty); pause freezes remaining ticks
 - [ ] Eating critter: +5 score, grow +1; then 3 more apples before next spawn roll
 - [ ] Critter does not replace the apple; Free + Pro, every mode
 - [ ] Drawn in CustomPainter; clearly not the apple

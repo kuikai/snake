@@ -20,7 +20,7 @@ abstract final class GameConfig {
   /// Apples that must be eaten before the first (or next) critter spawn can roll.
   static const int critterCooldownApples = 3;
   static const double critterSpawnChance = 0.15;
-  static const int critterLifetimeTicks = 5;
+  static const int critterLifetimeTicks = 6;
   static const int critterMinManhattan = 2;
   static const int critterMaxManhattan = 5;
 

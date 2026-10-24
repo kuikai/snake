@@ -228,7 +228,7 @@ class SnakeBoardPainter extends CustomPainter {
           center,
           cell,
           body: const Color(0xFF8B7355),
-          scale: 0.78,
+          scale: 1.56,
         );
       case CritterKind.rat:
         _drawRodent(
@@ -236,7 +236,7 @@ class SnakeBoardPainter extends CustomPainter {
           center,
           cell,
           body: const Color(0xFF6B5A48),
-          scale: 0.92,
+          scale: 1.84,
         );
       case CritterKind.lizard:
         _drawLizard(canvas, center, cell);
@@ -300,54 +300,55 @@ class SnakeBoardPainter extends CustomPainter {
   }
 
   void _drawLizard(Canvas canvas, Offset center, double cell) {
-    // Olive distinct from classic green snake body.
+    // Olive distinct from classic green snake body. Drawn at 2× cell size.
     const bodyColor = Color(0xFF7A8F3E);
+    final unit = cell * 2;
     final paint = Paint()..color = bodyColor;
     final leg = Paint()
       ..color = bodyColor
-      ..strokeWidth = cell * 0.07
+      ..strokeWidth = unit * 0.07
       ..strokeCap = StrokeCap.round;
 
     canvas.drawOval(
       Rect.fromCenter(
         center: center,
-        width: cell * 0.58,
-        height: cell * 0.28,
+        width: unit * 0.58,
+        height: unit * 0.28,
       ),
       paint,
     );
-    canvas.drawCircle(center.translate(cell * 0.22, 0), cell * 0.14, paint);
+    canvas.drawCircle(center.translate(unit * 0.22, 0), unit * 0.14, paint);
 
     // Tiny legs — reads as lizard, not snake.
     canvas.drawLine(
-      center.translate(-cell * 0.08, cell * 0.06),
-      center.translate(-cell * 0.18, cell * 0.2),
+      center.translate(-unit * 0.08, unit * 0.06),
+      center.translate(-unit * 0.18, unit * 0.2),
       leg,
     );
     canvas.drawLine(
-      center.translate(cell * 0.06, cell * 0.06),
-      center.translate(cell * 0.16, cell * 0.2),
+      center.translate(unit * 0.06, unit * 0.06),
+      center.translate(unit * 0.16, unit * 0.2),
       leg,
     );
     canvas.drawLine(
-      center.translate(-cell * 0.08, -cell * 0.06),
-      center.translate(-cell * 0.16, -cell * 0.18),
+      center.translate(-unit * 0.08, -unit * 0.06),
+      center.translate(-unit * 0.16, -unit * 0.18),
       leg,
     );
     canvas.drawLine(
-      center.translate(cell * 0.06, -cell * 0.06),
-      center.translate(cell * 0.14, -cell * 0.18),
+      center.translate(unit * 0.06, -unit * 0.06),
+      center.translate(unit * 0.14, -unit * 0.18),
       leg,
     );
 
     final tail = Paint()
       ..color = bodyColor
-      ..strokeWidth = cell * 0.07
+      ..strokeWidth = unit * 0.07
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke;
     canvas.drawLine(
-      center.translate(-cell * 0.26, 0),
-      center.translate(-cell * 0.4, cell * 0.06),
+      center.translate(-unit * 0.26, 0),
+      center.translate(-unit * 0.4, unit * 0.06),
       tail,
     );
   }
@@ -359,9 +360,12 @@ class SnakeBoardPainter extends CustomPainter {
     int ticksLeft,
   ) {
     final paint = Paint()..color = palette.inkSoft.withValues(alpha: 0.7);
-    final startX = center.dx - cell * 0.2;
-    final y = center.dy + cell * 0.38;
-    for (var i = 0; i < GameConfig.critterLifetimeTicks; i++) {
+    final count = GameConfig.critterLifetimeTicks;
+    const gap = 0.1;
+    // Sit just under the 2× body. Lizard legs reach about 0.4 cells down.
+    final startX = center.dx - (count - 1) * cell * gap / 2;
+    final y = center.dy + cell * 0.62;
+    for (var i = 0; i < count; i++) {
       final filled = i < ticksLeft;
       canvas.drawCircle(
         Offset(startX + i * cell * 0.1, y),

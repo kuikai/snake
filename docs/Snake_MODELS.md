@@ -41,7 +41,7 @@ File: `lib/core/game_config.dart`
 - scorePerCritter = 5
 - critterCooldownApples = 3
 - critterSpawnChance = 0.15
-- critterLifetimeTicks = 5
+- critterLifetimeTicks = 6
 - critterMinManhattan = 2
 - critterMaxManhattan = 5
 - obstaclesBySize = { small: 6, medium: 8, large: 12 }
@@ -141,7 +141,7 @@ class GameState {
 }
 ```
 
-`Critter`: `kind` (mouse / rat / lizard), `position`, `ticksLeft` (starts at 5).
+`Critter`: `kind` (mouse / rat / lizard), `position`, `ticksLeft` (starts at 6).
 
 Factory: `GameState.newRun(...)` places snake in the center, facing right, length 3, spawns food, optionally places obstacles.
 
