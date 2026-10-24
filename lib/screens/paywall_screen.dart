@@ -10,7 +10,6 @@ class PaywallScreen extends ConsumerWidget {
   const PaywallScreen({super.key});
 
   static const _benefits = [
-    '3 continues per run',
     'Small, Medium, and Large boards',
     'Wrap, No Walls, Obstacles, Increasing Speed',
     'Snake skins and board themes',

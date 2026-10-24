@@ -127,8 +127,6 @@ No all-caps paragraphs. The wordmark may be “Snake” not “SNAKE”.
 - One line of voice (see copy)
 - Restart = primary pill
 - Menu = text button
-- Continue (Pro) = secondary outline button
-- Upgrade nudge for Free = one quiet line + text button, not a modal wall
 
 ### Settings / History / Paywall
 - These may look more “app-like”
@@ -160,14 +158,12 @@ Dry, short, a little human. Never corporate. Never cute-overload.
 | Game over, normal | `oof.` | Game Over! Better luck next time! |
 | Game over, decent | `nice run.` | Congratulations |
 | New best | `new best.` | NEW HIGH SCORE!!! |
-| Continue used | `still here. 2 left.` | Continue purchased successfully |
-| Free upgrade line | `want another shot?` | Unlock premium features |
 | Paywall title | `Pro` | Go Pro and Supercharge Your Gameplay |
 | Paywall price | `$1.99 once` | Billed once. Cancel anytime. |
 | Empty history | `no runs yet.` | You haven't completed any games. |
 | Restore | `Restore purchase` | Restore Purchases (Manage Subscription) |
 
-Buttons: `Play`, `Again`, `Menu`, `Continue`, `Unlock · $1.99`
+Buttons: `Play`, `Again`, `Menu`, `Unlock · $1.99`
 
 ---
 

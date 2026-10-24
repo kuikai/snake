@@ -17,7 +17,6 @@ class GameState {
     required this.obstacles,
     required this.score,
     required this.foodEaten,
-    required this.continuesLeft,
     required this.tickMs,
     this.critter,
     this.applesUntilCritterRoll = GameConfig.critterCooldownApples,
@@ -35,7 +34,6 @@ class GameState {
   final List<GridPoint> obstacles;
   final int score;
   final int foodEaten;
-  final int continuesLeft;
   final int tickMs;
 
   /// Rare bonus prey, or null when none is on the board.
@@ -50,7 +48,6 @@ class GameState {
     required GameMode mode,
     required BoardSize boardSize,
     required bool increasingSpeed,
-    required bool isPro,
   }) {
     final gridSize = GameConfig.gridSizeFor(boardSize);
     final center = gridSize ~/ 2;
@@ -82,7 +79,6 @@ class GameState {
       obstacles: obstacles,
       score: 0,
       foodEaten: 0,
-      continuesLeft: isPro ? GameConfig.continuesPerRun : 0,
       tickMs: GameConfig.baseTickMs,
       critter: null,
       applesUntilCritterRoll: GameConfig.critterCooldownApples,
@@ -103,7 +99,6 @@ class GameState {
     List<GridPoint>? obstacles,
     int? score,
     int? foodEaten,
-    int? continuesLeft,
     int? tickMs,
     Critter? critter,
     bool clearCritter = false,
@@ -123,7 +118,6 @@ class GameState {
       obstacles: obstacles ?? this.obstacles,
       score: score ?? this.score,
       foodEaten: foodEaten ?? this.foodEaten,
-      continuesLeft: continuesLeft ?? this.continuesLeft,
       tickMs: tickMs ?? this.tickMs,
       critter: clearCritter ? null : (critter ?? this.critter),
       applesUntilCritterRoll:
@@ -144,7 +138,6 @@ class GameState {
         'obstacles': obstacles.map((p) => p.toJson()).toList(),
         'score': score,
         'foodEaten': foodEaten,
-        'continuesLeft': continuesLeft,
         'tickMs': tickMs,
         'critter': critter?.toJson(),
         'applesUntilCritterRoll': applesUntilCritterRoll,
@@ -170,7 +163,6 @@ class GameState {
           .toList(),
       score: json['score'] as int,
       foodEaten: json['foodEaten'] as int,
-      continuesLeft: json['continuesLeft'] as int,
       tickMs: json['tickMs'] as int,
       critter: json['critter'] == null
           ? null

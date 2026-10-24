@@ -47,7 +47,7 @@ class SettingsScreen extends ConsumerWidget {
         SizedBox(height: 12),
         Text(
           'Free: unlimited Classic on 20×20.\n'
-          'Pro: modes, sizes, continues, skins, themes, and history.',
+          'Pro: modes, sizes, skins, themes, and history.',
         ),
       ],
     );

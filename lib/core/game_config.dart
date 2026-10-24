@@ -16,7 +16,6 @@ abstract final class GameConfig {
 
   static const int scorePerFood = 1;
   static const int scorePerCritter = 5;
-  static const int continuesPerRun = 3;
 
   /// Apples that must be eaten before the first (or next) critter spawn can roll.
   static const int critterCooldownApples = 3;

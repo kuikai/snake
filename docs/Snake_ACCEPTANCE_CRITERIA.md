@@ -63,8 +63,6 @@
 - [ ] No forced ads, no time limits, no energy system
 
 ### Pro ($1.99 one-time unlock)
-- [ ] **Unlimited Undo / Second Chance**
-  - On Game Over, Pro users get a “Continue” or “Undo last move” option (limited uses per game or unlimited – decide: recommend 1–3 continues per run for balance)
 - [ ] **Multiple board sizes** (Small / Medium / Large)
 - [ ] **Extra modes** (selectable before starting a game):
   - Walls Wrap (snake exits one side and enters the opposite)
@@ -110,8 +108,6 @@
 - [ ] “New High Score!” celebration when beaten
 - [ ] Restart button
 - [ ] Back to Menu
-- [ ] Pro users: Continue / Undo option (if available)
-- [ ] Free users: soft upgrade prompt (“Unlock unlimited continues + more modes”)
 
 ### High Scores / History
 - [ ] Classic high score always visible

@@ -89,7 +89,6 @@ Done when: Free loop works end-to-end (Play → die → restart → high score s
 - When `isPro == true` (debug unlock):
   - Wrap / No Walls / Obstacles / Increasing Speed work
   - Board sizes work
-  - 3 continues on Game Over
 - Skins + board themes selectable for Pro
 
 Done when: debug-unlocked Pro can play every mode.

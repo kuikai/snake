@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../core/app_router.dart';
 import '../core/cosmetics.dart';
 import '../core/palette.dart';
 import '../models/models.dart';
@@ -97,10 +96,6 @@ class _GameScreenState extends ConsumerState<GameScreen>
     }
   }
 
-  Future<void> _openPaywall() async {
-    await Navigator.of(context).pushNamed(AppRoutes.paywall);
-  }
-
   @override
   Widget build(BuildContext context) {
     final game = ref.watch(gameProvider);
@@ -153,18 +148,11 @@ class _GameScreenState extends ConsumerState<GameScreen>
               ? GameOverPanel(
                   score: game.score,
                   isNewHighScore: isNewHighScore,
-                  continuesLeft: game.continuesLeft,
                   palette: palette,
-                  onContinue: game.continuesLeft > 0
-                      ? () {
-                          ref.read(gameProvider.notifier).useContinue();
-                        }
-                      : null,
                   onAgain: () {
                     ref.read(gameProvider.notifier).finalizeAndRestart();
                   },
                   onMenu: _goToMenu,
-                  onUpgrade: isPro ? null : _openPaywall,
                 )
               : Stack(
                   children: [

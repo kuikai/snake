@@ -40,7 +40,6 @@ GameState _classicRunning({
     obstacles: const [],
     score: score,
     foodEaten: foodEaten,
-    continuesLeft: 0,
     tickMs: GameConfig.baseTickMs,
     critter: critter,
     applesUntilCritterRoll: applesUntilCritterRoll,
@@ -218,26 +217,21 @@ void main() {
       expect(ticks, lessThan(1000));
     });
 
-    test('continue restores snapshot and decrements continuesLeft', () {
-      final snapshot = _classicRunning(
+    test('game over stays game over', () {
+      final death = _classicRunning(
         snake: const [
           GridPoint(5, 5),
           GridPoint(4, 5),
           GridPoint(3, 5),
         ],
         food: const GridPoint(0, 0),
-      ).copyWith(continuesLeft: 3);
+      ).copyWith(status: RunStatus.gameOver);
 
-      final death = snapshot.copyWith(status: RunStatus.gameOver);
-      final restored = SnakeEngine.useContinue(
-        deathState: death,
-        snapshot: snapshot,
-      );
+      final next = SnakeEngine.tick(death);
 
-      expect(restored.status, RunStatus.running);
-      expect(restored.continuesLeft, 2);
-      expect(restored.snake, snapshot.snake);
-      expect(restored.food, snapshot.food);
+      expect(next.status, RunStatus.gameOver);
+      expect(next.snake, death.snake);
+      expect(next.food, death.food);
     });
   });
 

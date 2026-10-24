@@ -21,4 +21,4 @@ Classic offline Snake game. Material 3. Free Classic + $1.99 Pro.
 ## Monetization
 
 - Free: unlimited Classic 20×20 + high score
-- Pro $1.99 one-time: 3 continues/run, sizes, extra modes, skins, themes, full history
+- Pro $1.99 one-time: sizes, extra modes, skins, themes, full history

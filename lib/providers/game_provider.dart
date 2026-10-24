@@ -15,7 +15,6 @@ final gameProvider =
 
 class GameController extends Notifier<GameState> {
   Timer? _timer;
-  GameState? lastSafeSnapshot;
   bool isNewHighScore = false;
   bool _recordedThisOver = false;
 
@@ -31,13 +30,11 @@ class GameController extends Notifier<GameState> {
       mode: settings.lastMode,
       boardSize: settings.lastBoardSize,
       increasingSpeed: settings.lastIncreasingSpeed,
-      isPro: isPro,
     );
   }
 
   void startRun() {
     _stopTimer();
-    lastSafeSnapshot = null;
     isNewHighScore = false;
     _recordedThisOver = false;
     final isPro = ref.read(proStatusProvider).isPro;
@@ -48,10 +45,8 @@ class GameController extends Notifier<GameState> {
         mode: settings.lastMode,
         boardSize: settings.lastBoardSize,
         increasingSpeed: settings.lastIncreasingSpeed,
-        isPro: isPro,
       ),
     );
-    lastSafeSnapshot = state;
     _syncLoop();
   }
 
@@ -86,21 +81,6 @@ class GameController extends Notifier<GameState> {
     }
   }
 
-  void useContinue() {
-    final snapshot = lastSafeSnapshot;
-    if (snapshot == null || state.status != RunStatus.gameOver) return;
-    if (state.continuesLeft <= 0) return;
-
-    _recordedThisOver = false;
-    isNewHighScore = false;
-    state = SnakeEngine.useContinue(
-      deathState: state,
-      snapshot: snapshot,
-    );
-    unawaited(_feedback.button());
-    _syncLoop();
-  }
-
   Future<void> finalizeAndRestart() async {
     await finalizeRunIfNeeded();
     unawaited(_feedback.button());
@@ -115,9 +95,8 @@ class GameController extends Notifier<GameState> {
   void _onTick() {
     if (state.status != RunStatus.running) return;
 
-    lastSafeSnapshot = state;
-    final previousScore = state.score;
-    final next = SnakeEngine.tick(state);
+    final previous = state;
+    final next = SnakeEngine.tick(previous);
 
     if (next.status == RunStatus.gameOver) {
       unawaited(_feedback.death());
@@ -125,12 +104,12 @@ class GameController extends Notifier<GameState> {
       return;
     }
 
-    if (next.score > previousScore) {
+    if (next.score > previous.score) {
       unawaited(_feedback.eat());
     }
 
     state = next;
-    if (next.tickMs != lastSafeSnapshot!.tickMs) {
+    if (next.tickMs != previous.tickMs) {
       _syncLoop();
     }
   }
@@ -140,10 +119,7 @@ class GameController extends Notifier<GameState> {
         ref.read(highScoresProvider.notifier).wouldBePersonalBest(next);
     state = next;
     _syncLoop();
-
-    if (next.continuesLeft <= 0) {
-      unawaited(_recordFinishedRun(next));
-    }
+    unawaited(_recordFinishedRun(next));
   }
 
   Future<void> _recordFinishedRun(GameState game) async {

@@ -37,7 +37,7 @@ If you can run `flutter analyze`, do that and include real errors.
 - Obstacles: 6/8/12 by size, start corridor clear
 - Pause on background; keep screen awake while running
 - Back during a run pauses, does not discard the run
-- Pro continues: 3 per run, restore state from before the death move
+- Death ends the run. No continue and no rewind
 
 ### Free vs Pro
 - One product `snake_pro`, entitlement `pro`. One purchase unlocks all Pro

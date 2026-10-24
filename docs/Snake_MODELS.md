@@ -44,7 +44,6 @@ File: `lib/core/game_config.dart`
 - critterLifetimeTicks = 5
 - critterMinManhattan = 2
 - critterMaxManhattan = 5
-- continuesPerRun = 3
 - obstaclesBySize = { small: 6, medium: 8, large: 12 }
 - maxHistory = 30
 
@@ -103,7 +102,7 @@ Example: `obstacles_large_speed1`
 
 ---
 
-## GameRun (one finished or continued session, persisted in history)
+## GameRun (one finished session, persisted in history)
 
 ```dart
 class GameRun {
@@ -136,7 +135,6 @@ class GameState {
   final List<GridPoint> obstacles;
   final int score;
   final int foodEaten;
-  final int continuesLeft;         // 3 for Pro at start, 0 for Free
   final int tickMs;
   final Critter? critter;          // rare mouse/rat/lizard; short life
   final int applesUntilCritterRoll; // cooldown before spawn roll
@@ -167,4 +165,4 @@ RevenueCat is source of truth. Cache `isPro` locally so offline still works.
 - `direction.opposite` must be defined.
 - Applying input: if new dir == opposite of current `direction`, ignore. Else set `queuedDirection`.
 - On tick: consume `queuedDirection` if legal, then move head, then check collisions, then eat or pop tail.
-- Continue: restore a snapshot taken at the start of the last successful tick (before the death move). Decrement `continuesLeft`.
+- Death ends the run. There is no continue and no rewind.

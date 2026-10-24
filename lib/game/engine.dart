@@ -18,7 +18,6 @@ abstract final class SnakeEngine {
     GameMode mode = GameMode.classic,
     BoardSize boardSize = BoardSize.medium,
     bool increasingSpeed = false,
-    bool isPro = false,
     Random? random,
   }) {
     final gridSize = GameConfig.gridSizeFor(boardSize);
@@ -56,7 +55,6 @@ abstract final class SnakeEngine {
       obstacles: obstacles,
       score: 0,
       foodEaten: 0,
-      continuesLeft: isPro ? GameConfig.continuesPerRun : 0,
       tickMs: GameConfig.baseTickMs,
       critter: null,
       applesUntilCritterRoll: GameConfig.critterCooldownApples,
@@ -223,22 +221,6 @@ abstract final class SnakeEngine {
       critter: critter,
       clearCritter: critter == null,
       applesUntilCritterRoll: applesUntilCritterRoll,
-    );
-  }
-
-  /// Restore [snapshot] from before the death move; spend one continue.
-  static GameState useContinue({
-    required GameState deathState,
-    required GameState snapshot,
-  }) {
-    if (deathState.status != RunStatus.gameOver ||
-        deathState.continuesLeft <= 0) {
-      return deathState;
-    }
-    return snapshot.copyWith(
-      status: RunStatus.running,
-      continuesLeft: deathState.continuesLeft - 1,
-      clearQueuedDirection: true,
     );
   }
 }

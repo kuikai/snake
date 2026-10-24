@@ -16,7 +16,7 @@ When ON:
 - During each tick, draw the snake lerping from the previous grid cell to the next
 - Head, body, and tail all follow the same interpolation
 - Wrap mode must lerp through the edge correctly (do not draw a segment across the whole board)
-- Collision, speed, score, food spawn, continues — unchanged
+- Collision, speed, score, food spawn — unchanged
 - Pause freezes the visual mid-lerp
 
 When OFF:

@@ -28,7 +28,6 @@ void main() {
       obstacles: const [],
       score: 4,
       foodEaten: 4,
-      continuesLeft: 0,
       tickMs: GameConfig.baseTickMs,
       critter: const Critter(
         kind: CritterKind.mouse,

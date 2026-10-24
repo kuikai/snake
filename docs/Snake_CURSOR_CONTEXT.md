@@ -16,7 +16,7 @@ Read first, in this order:
 
 - Classic Snake, clean Material 3
 - Free: unlimited Classic 20×20 + high score
-- Pro $1.99 one-time: continues, sizes, modes, skins, themes, history
+- Pro $1.99 one-time: sizes, modes, skins, themes, history
 - Offline-first
 - Package: `com.yourname.snake`
 - RevenueCat product: `snake_pro`

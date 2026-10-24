@@ -13,7 +13,7 @@
 A classic Snake game with a modern Material 3 look.
 
 - Free users play unlimited **Classic** mode on one board size and keep a high score.
-- Pro ($1.99 one-time) unlocks extra modes, board sizes, continues, skins, themes, and full history.
+- Pro ($1.99 one-time) unlocks extra modes, board sizes, skins, themes, and full history.
 
 This is a game I would actually play. Keep it simple, fast, and fair.
 
@@ -29,7 +29,7 @@ This is a game I would actually play. Keep it simple, fast, and fair.
 | Score | **+1** per food |
 | Tick rate (Classic) | **180 ms** per step |
 | Increasing Speed mode | Start 180 ms, −15 ms every **5** food, floor **80 ms** |
-| Continues (Pro) | **3** continues per run. Restores state from *before* the death move. Same length, same food. |
+| Death | Ends the run. No continues. Again starts a new run. |
 | Portrait | **Lock portrait** for MVP |
 | Controls | Swipe + on-screen D-pad |
 | Reverse | Illegal. Ignore a 180° turn. Queue **one** pending direction. |
@@ -74,10 +74,9 @@ For MVP keep the mode picker simple:
 - Unlimited Classic on 20×20
 - Current Classic high score
 - Light / Dark / System theme
-- Soft upgrade prompts only (Game Over + Settings + locked chips)
+- Soft upgrade prompts only (Settings + locked chips)
 
 **Pro ($1.99 one-time)**
-- 3 continues per run
 - All board sizes
 - All extra modes + Increasing Speed
 - Skins + board themes
